@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tài Khoản – Sữa Hạt Dana</title>
+  <meta name="description" content="Đăng nhập hoặc tạo tài khoản Dana để đặt hàng, theo dõi đơn và nhận ưu đãi độc quyền." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+</head>
+<body>
+<div id="cursor"></div><div id="cursor-trail"></div>
+<header class="navbar scrolled"><div class="nav-inner"><a href="index.html" class="nav-logo"><div class="logo-icon">D</div><span>Dana</span></a><nav class="nav-links"><a href="index.html">Trang chủ</a><a href="products.html">Sản phẩm</a><a href="blog.html">Blog</a><a href="about.html">Giới thiệu</a><a href="contact.html">Liên hệ</a></nav><div class="nav-actions"><a href="cart.html" class="nav-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="cart-badge">0</span></a><a href="account.html" class="nav-icon-btn active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a></div></div></header>
+
+<!-- AUTH SECTION (shown when not logged in) -->
+<section class="account-page" id="auth-section" data-auth-show="logged-out">
+  <div class="container">
+    <div class="auth-card" data-reveal="scale">
+      <div class="logo-center">
+        <div class="nav-logo" style="justify-content:center"><div class="logo-icon" style="width:52px;height:52px;font-size:1.3rem">D</div></div>
+        <p style="margin-top:8px;font-size:0.85rem;color:var(--gray)">hatdana.id.vn</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs-header">
+        <button class="tab-btn active" data-tab="tab-login">Đăng nhập</button>
+        <button class="tab-btn" data-tab="tab-register">Tạo tài khoản</button>
+      </div>
+
+      <!-- Login Tab -->
+      <div class="tab-pane active" id="tab-login">
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input class="form-control" type="email" id="login-email" placeholder="example@email.com" required />
+          </div>
+          <div class="form-group">
+            <label for="login-password">Mật khẩu</label>
+            <input class="form-control" type="password" id="login-password" placeholder="••••••••" required />
+          </div>
+          <p class="error-msg" id="login-error"></p>
+          <button type="submit" class="btn btn-primary w-100" style="justify-content:center;margin-top:8px">Đăng nhập</button>
+        </form>
+        <p style="text-align:center;margin-top:16px;font-size:0.85rem;color:var(--gray)">
+          Chưa có tài khoản? <a href="#" onclick="document.querySelector('[data-tab=\'tab-register\']').click();return false;" style="color:var(--sage);font-weight:600">Tạo ngay</a>
+        </p>
+      </div>
+
+      <!-- Register Tab -->
+      <div class="tab-pane" id="tab-register">
+        <form id="register-form">
+          <div class="form-group">
+            <label for="reg-name">Họ và tên</label>
+            <input class="form-control" type="text" id="reg-name" placeholder="Nguyễn Văn A" required />
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Email</label>
+            <input class="form-control" type="email" id="reg-email" placeholder="example@email.com" required />
+          </div>
+          <div class="form-group">
+            <label for="reg-phone">Số điện thoại</label>
+            <input class="form-control" type="tel" id="reg-phone" placeholder="0974 xxx xxx" />
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Mật khẩu</label>
+            <input class="form-control" type="password" id="reg-password" placeholder="Tối thiểu 6 ký tự" required />
+          </div>
+          <div class="form-group">
+            <label for="reg-confirm">Xác nhận mật khẩu</label>
+            <input class="form-control" type="password" id="reg-confirm" placeholder="Nhập lại mật khẩu" required />
+          </div>
+          <p class="error-msg" id="reg-error"></p>
+          <button type="submit" class="btn btn-primary w-100" style="justify-content:center;margin-top:8px">Tạo tài khoản</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROFILE SECTION (shown when logged in) -->
+<section class="account-page" id="profile-section" data-auth-show="logged-in" style="padding-bottom:80px">
+  <div class="container">
+    <div class="profile-layout">
+      <!-- Sidebar -->
+      <div class="profile-sidebar" data-reveal="left">
+        <div class="profile-avatar">👤</div>
+        <h4 data-user-name>Người dùng</h4>
+        <p style="font-size:0.85rem;color:var(--gray)" data-user-email>email@example.com</p>
+        <nav class="profile-nav">
+          <a href="#tab-profile" class="active" onclick="showProfileTab('tab-profile');return false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Thông tin cá nhân
+          </a>
+          <a href="#tab-orders" onclick="showProfileTab('tab-orders');return false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Đơn hàng của tôi
+          </a>
+          <a href="#tab-address" onclick="showProfileTab('tab-address');return false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Địa chỉ giao hàng
+          </a>
+          <a href="#" data-logout style="margin-top:24px;color:#e44!important">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Đăng xuất
+          </a>
+        </nav>
+      </div>
+
+      <!-- Content -->
+      <div data-reveal="right">
+        <!-- Personal Info -->
+        <div id="ptab-tab-profile" style="background:var(--white);border-radius:var(--radius-lg);padding:40px;box-shadow:var(--shadow-card)">
+          <h3 style="margin-bottom:28px;font-size:1.5rem">Thông tin cá nhân</h3>
+          <form id="profile-form">
+            <div class="grid-2" style="gap:20px">
+              <div class="form-group"><label for="pf-name">Họ và tên</label><input class="form-control" type="text" id="pf-name" /></div>
+              <div class="form-group"><label for="pf-phone">Số điện thoại</label><input class="form-control" type="tel" id="pf-phone" /></div>
+            </div>
+            <div class="form-group"><label for="pf-email">Email</label><input class="form-control" type="email" id="pf-email" disabled style="opacity:0.6;background:var(--cream)" /></div>
+            <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+          </form>
+        </div>
+
+        <!-- Orders -->
+        <div id="ptab-tab-orders" style="display:none;background:var(--white);border-radius:var(--radius-lg);padding:40px;box-shadow:var(--shadow-card)">
+          <h3 style="margin-bottom:28px;font-size:1.5rem">Đơn hàng của tôi</h3>
+          <div style="text-align:center;padding:60px 0;color:var(--gray)">
+            <div style="font-size:4rem;margin-bottom:16px">📦</div>
+            <p>Bạn chưa có đơn hàng nào.<br/>Hãy khám phá sản phẩm Dana nhé!</p>
+            <a href="products.html" class="btn btn-primary" style="margin-top:20px;display:inline-flex">Mua ngay →</a>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div id="ptab-tab-address" style="display:none;background:var(--white);border-radius:var(--radius-lg);padding:40px;box-shadow:var(--shadow-card)">
+          <h3 style="margin-bottom:28px;font-size:1.5rem">Địa chỉ giao hàng</h3>
+          <div class="form-group"><label>Địa chỉ</label><input class="form-control" type="text" placeholder="Số nhà, tên đường" /></div>
+          <div class="grid-2" style="gap:20px"><div class="form-group"><label>Phường/Xã</label><input class="form-control" type="text" placeholder="Phường..." /></div><div class="form-group"><label>Quận/Huyện</label><input class="form-control" type="text" placeholder="Quận..." /></div></div>
+          <div class="form-group"><label>Tỉnh/Thành phố</label><input class="form-control" type="text" value="TP. Hồ Chí Minh" /></div>
+          <button class="btn btn-primary">Lưu địa chỉ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer" style="padding:40px 0"><div class="container"><div class="footer-bottom"><p>© 2026 Sữa Hạt Dana. Bảo lưu mọi quyền.</p><p class="powered">Thương hiệu Việt Nam 🇻🇳</p></div></div></footer>
+
+<div class="toast-container"></div>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/cart.js"></script>
+<script src="assets/js/account.js"></script>
+<script>
+function showProfileTab(id) {
+  document.querySelectorAll('[id^="ptab-"]').forEach(el => el.style.display = 'none');
+  const t = document.getElementById('ptab-' + id);
+  if (t) { t.style.display = 'block'; t.style.animation = 'fadeInUp 0.4s ease'; }
+  document.querySelectorAll('.profile-nav a').forEach(a => a.classList.remove('active'));
+  const link = document.querySelector(`.profile-nav a[href="#${id}"]`);
+  if (link) link.classList.add('active');
+}
+</script>
+</body>
+</html>

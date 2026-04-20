@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sữa Hạt Dana – Dinh Dưỡng Thuần Tự Nhiên | hatdana.id.vn</title>
+  <meta name="description" content="Sữa hạt Dana – thức uống dinh dưỡng thuần tự nhiên từ các loại hạt hảo hạng. Không đường, không chất bảo quản, giao hàng tận nơi tại TP.HCM." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <!-- Lenis Smooth Scroll -->
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+</head>
+<body>
+
+<!-- Loading Screen -->
+<div id="loading-screen">
+  <div class="loading-logo">🌱 Dana</div>
+  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+  <p style="font-size:0.85rem;color:var(--gray);margin-top:8px;">Đang tải...</p>
+</div>
+
+<!-- Custom Cursor -->
+<div id="cursor"></div>
+<div id="cursor-trail"></div>
+
+<!-- Page Transition -->
+<div class="page-transition"></div>
+
+<!-- =================== NAVBAR =================== -->
+<header class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-icon">D</div>
+      <span>Dana</span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html" class="active">Trang chủ</a>
+      <a href="products.html">Sản phẩm</a>
+      <a href="blog.html">Blog</a>
+      <a href="about.html">Giới thiệu</a>
+      <a href="contact.html">Liên hệ</a>
+    </nav>
+    <div class="nav-actions">
+      <a href="cart.html" class="nav-icon-btn" title="Giỏ hàng">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="cart-badge" id="cart-badge-nav">0</span>
+      </a>
+      <a href="account.html" class="nav-icon-btn" id="account-nav-icon" title="Tài khoản">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </a>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu-overlay" id="mobile-overlay"></div>
+<div class="mobile-menu" id="mobile-menu">
+  <nav>
+    <a href="index.html">Trang chủ</a>
+    <a href="products.html">Sản phẩm</a>
+    <a href="blog.html">Blog</a>
+    <a href="about.html">Giới thiệu</a>
+    <a href="contact.html">Liên hệ</a>
+    <a href="account.html">Tài khoản</a>
+    <a href="cart.html">Giỏ hàng</a>
+  </nav>
+</div>
+
+<!-- =================== HERO =================== -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <canvas id="hero-canvas"></canvas>
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-label">
+        <span class="dot"></span>
+        100% Tự Nhiên · Không Chất Bảo Quản
+      </div>
+      <h1 class="hero-title">
+        <span class="line"><span class="word">Sữa</span> <span class="word">Hạt</span></span>
+        <span class="line"><span class="word text-sage italic">Dana</span></span>
+        <span class="line" style="font-size:clamp(1.2rem,2.5vw,2rem);font-family:var(--font-body);font-weight:300;color:var(--dark-soft)"><span class="word">Dinh Dưỡng Thuần Tự Nhiên</span></span>
+      </h1>
+      <p class="hero-subtitle">Được làm từ những hạt hảo hạng, không đường nhân tạo, không chất bảo quản. Mỗi ngụm là trọn vẹn thiên nhiên.</p>
+      <div class="hero-actions">
+        <div class="btn-magnetic">
+          <a href="products.html" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            Khám phá sản phẩm
+          </a>
+        </div>
+        <div class="btn-magnetic">
+          <a href="about.html" class="btn btn-secondary">Câu chuyện Dana</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-image">
+    <img src="assets/images/products/almond.png" alt="Sữa Hạt Dana" />
+  </div>
+  <div class="hero-scroll-indicator">
+    <div class="scroll-line"></div>
+    <span>Cuộn xuống</span>
+  </div>
+</section>
+
+<!-- =================== MARQUEE =================== -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marquee-track">
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>100% Tự nhiên</div>
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Không chất bảo quản</div>
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Giàu dinh dưỡng</div>
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Giao hàng TP.HCM</div>
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>Không đường nhân tạo</div>
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Chứng nhận ATTP</div>
+    <!-- Duplicate for seamless loop -->
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>100% Tự nhiên</div>
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Không chất bảo quản</div>
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Giàu dinh dưỡng</div>
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Giao hàng TP.HCM</div>
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>Không đường nhân tạo</div>
+    <div class="marquee-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Chứng nhận ATTP</div>
+  </div>
+</div>
+
+<!-- =================== PRODUCTS SECTION =================== -->
+<section class="products-section">
+  <div class="container">
+    <div class="section-header" data-reveal="up">
+      <span class="section-label">Sản Phẩm</span>
+      <h2>Bộ Sưu Tập <span class="text-gradient">Sữa Hạt Dana</span></h2>
+      <p>Mỗi chai là sự kết hợp hoàn hảo giữa hương vị tự nhiên và giá trị dinh dưỡng cao cho cả gia đình.</p>
+    </div>
+
+    <div class="filter-tabs" data-reveal="up">
+      <button class="filter-tab active" data-filter="all">Tất cả</button>
+      <button class="filter-tab" data-filter="hanh-nhan">Hạnh Nhân</button>
+      <button class="filter-tab" data-filter="hat-dieu">Hạt Điều</button>
+      <button class="filter-tab" data-filter="oc-cho">Óc Chó</button>
+      <button class="filter-tab" data-filter="hat-sen">Hạt Sen</button>
+      <button class="filter-tab" data-filter="yen-mach">Yến Mạch</button>
+    </div>
+
+    <div class="grid-3" data-stagger>
+      <!-- Sữa Hạnh Nhân -->
+      <div class="product-card tilt-card" data-category="hanh-nhan">
+        <div class="product-card-img">
+          <span class="product-card-badge">Bán chạy</span>
+          <img src="assets/images/products/almond.png" alt="Sữa Hạnh Nhân Dana" loading="lazy" />
+        </div>
+        <div class="product-card-body">
+          <div class="product-card-tags">
+            <span class="tag">Ít đường</span>
+            <span class="tag">Giàu Vitamin E</span>
+          </div>
+          <h4>Sữa Hạnh Nhân Nguyên Chất</h4>
+          <p>Vị béo ngậy dịu ngọt từ hạnh nhân rang sơ, không thêm đường, giàu Vitamin E và Magie.</p>
+          <div class="product-card-footer">
+            <div><span class="price">85.000đ</span><span class="price-old">100.000đ</span></div>
+            <button class="add-btn"
+              data-add-cart data-id="sp001" data-name="Sữa Hạnh Nhân Nguyên Chất"
+              data-price="85000" data-image="assets/images/products/almond.png"
+              aria-label="Thêm vào giỏ">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sữa Hạt Điều -->
+      <div class="product-card tilt-card" data-category="hat-dieu">
+        <div class="product-card-img">
+          <span class="product-card-badge hot">Mới</span>
+          <img src="assets/images/products/cashew.png" alt="Sữa Hạt Điều Dana" loading="lazy" />
+        </div>
+        <div class="product-card-body">
+          <div class="product-card-tags">
+            <span class="tag">Béo lành mạnh</span>
+            <span class="tag">Creamy</span>
+          </div>
+          <h4>Sữa Hạt Điều Rang Muối</h4>
+          <p>Kết cấu mịn màng, vị béo đặc trưng từ hạt điều rang nhẹ. Thích hợp pha cà phê hoặc smoothie.</p>
+          <div class="product-card-footer">
+            <div><span class="price">90.000đ</span></div>
+            <button class="add-btn"
+              data-add-cart data-id="sp002" data-name="Sữa Hạt Điều Rang Muối"
+              data-price="90000" data-image="assets/images/products/cashew.png"
+              aria-label="Thêm vào giỏ">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sữa Óc Chó -->
+      <div class="product-card tilt-card" data-category="oc-cho">
+        <div class="product-card-img">
+          <img src="assets/images/products/walnut.png" alt="Sữa Óc Chó Dana" loading="lazy" />
+        </div>
+        <div class="product-card-body">
+          <div class="product-card-tags">
+            <span class="tag">Omega-3</span>
+            <span class="tag">Tốt cho não</span>
+          </div>
+          <h4>Sữa Óc Chó Mật Ong</h4>
+          <p>Kết hợp óc chó giàu Omega-3 và mật ong rừng nguyên chất, hỗ trợ sức khỏe não bộ và trí nhớ.</p>
+          <div class="product-card-footer">
+            <div><span class="price">95.000đ</span></div>
+            <button class="add-btn"
+              data-add-cart data-id="sp003" data-name="Sữa Óc Chó Mật Ong"
+              data-price="95000" data-image="assets/images/products/walnut.png"
+              aria-label="Thêm vào giỏ">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sữa Hạt Sen -->
+      <div class="product-card tilt-card" data-category="hat-sen">
+        <div class="product-card-img">
+          <span class="product-card-badge">Thanh mát</span>
+          <img src="assets/images/products/lotus.png" alt="Sữa Hạt Sen Dana" loading="lazy" />
+        </div>
+        <div class="product-card-body">
+          <div class="product-card-tags">
+            <span class="tag">Dưỡng thần kinh</span>
+            <span class="tag">Dịu nhẹ</span>
+          </div>
+          <h4>Sữa Hạt Sen Tươi</h4>
+          <p>Hương sen thanh khiết, vị ngọt dịu tự nhiên, giúp an thần, ngủ ngon và dưỡng tâm.</p>
+          <div class="product-card-footer">
+            <div><span class="price">88.000đ</span></div>
+            <button class="add-btn"
+              data-add-cart data-id="sp004" data-name="Sữa Hạt Sen Tươi"
+              data-price="88000" data-image="assets/images/products/lotus.png"
+              aria-label="Thêm vào giỏ">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sữa Yến Mạch -->
+      <div class="product-card tilt-card" data-category="yen-mach">
+        <div class="product-card-img">
+          <img src="assets/images/products/oat.png" alt="Sữa Yến Mạch Dana" loading="lazy" />
+        </div>
+        <div class="product-card-body">
+          <div class="product-card-tags">
+            <span class="tag">Chất xơ cao</span>
+            <span class="tag">No bền</span>
+          </div>
+          <h4>Sữa Yến Mạch Vani</h4>
+          <p>Giàu Beta-glucan giúp no lâu, kiểm soát đường huyết. Hương vani tự nhiên dịu dàng.</p>
+          <div class="product-card-footer">
+            <div><span class="price">75.000đ</span></div>
+            <button class="add-btn"
+              data-add-cart data-id="sp005" data-name="Sữa Yến Mạch Vani"
+              data-price="75000" data-image="assets/images/products/oat.png"
+              aria-label="Thêm vào giỏ">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Combo Pack -->
+      <div class="product-card tilt-card" data-category="all">
+        <div class="product-card-img" style="background:linear-gradient(135deg,var(--sage-ultra-light),var(--cream-dark))">
+          <span class="product-card-badge hot">Ưu đãi</span>
+          <img src="assets/images/products/almond.png" alt="Combo Sữa Hạt Dana" loading="lazy" style="mix-blend-mode:multiply" />
+        </div>
+        <div class="product-card-body">
+          <div class="product-card-tags">
+            <span class="tag">Tiết kiệm 20%</span>
+            <span class="tag">5 vị</span>
+          </div>
+          <h4>Combo Thử Nghiệm 5 Chai</h4>
+          <p>Trọn bộ 5 loại sữa hạt đặc trưng. Lựa chọn hoàn hảo cho lần đầu trải nghiệm Dana.</p>
+          <div class="product-card-footer">
+            <div><span class="price">380.000đ</span><span class="price-old">475.000đ</span></div>
+            <button class="add-btn"
+              data-add-cart data-id="sp_combo01" data-name="Combo Thử Nghiệm 5 Chai"
+              data-price="380000" data-image="assets/images/products/almond.png"
+              aria-label="Thêm vào giỏ">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-8" data-reveal="up">
+      <a href="products.html" class="btn btn-secondary">Xem tất cả sản phẩm →</a>
+    </div>
+  </div>
+</section>
+
+<!-- =================== STATS =================== -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid" data-stagger>
+      <div class="stat-item">
+        <span class="stat-icon">🌿</span>
+        <span class="stat-number" data-count="10000" data-suffix="+">0</span>
+        <p class="stat-label">Khách hàng tin yêu</p>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">🌾</span>
+        <span class="stat-number" data-count="8" data-suffix=" loại">0</span>
+        <p class="stat-label">Loại hạt hảo hạng</p>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">✅</span>
+        <span class="stat-number" data-count="100" data-suffix="%">0</span>
+        <p class="stat-label">Nguyên liệu tự nhiên</p>
+      </div>
+      <div class="stat-item">
+        <span class="stat-icon">📦</span>
+        <span class="stat-number" data-count="50000" data-suffix="+">0</span>
+        <p class="stat-label">Đơn hàng hoàn thành</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== RECIPE / USAGE SECTION =================== -->
+<section class="recipe-section">
+  <div class="container">
+    <div class="section-header" data-reveal="up">
+      <span class="section-label">Cách Thưởng Thức</span>
+      <h2>Uống Ngon Mỗi Ngày</h2>
+      <p>Sữa Hạt Dana không chỉ ngon khi uống thẳng, mà còn linh hoạt trong nhiều công thức sáng tạo.</p>
+    </div>
+    <div class="recipe-cards" data-stagger>
+      <div class="recipe-card">
+        <div class="recipe-card-img">
+          <img src="assets/images/blog/blog2.png" alt="Buổi sáng với sữa hạt" loading="lazy" />
+        </div>
+        <div class="recipe-card-body">
+          <div class="recipe-card-cats"><span class="tag">Buổi sáng</span><span class="tag">Đơn giản</span></div>
+          <h4>Sữa Hạnh Nhân Pha Cà Phê</h4>
+          <p>Thay thế sữa bò bằng Dana Hạnh Nhân cho ly Latte béo ngậy, thơm ngon và healthy hơn.</p>
+          <div class="recipe-card-footer">
+            <span class="recipe-kcal">🌱 ~120 kcal / ly</span>
+            <a href="blog.html" class="read-more">Xem công thức <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <div class="recipe-card">
+        <div class="recipe-card-img">
+          <img src="assets/images/blog/blog1.png" alt="Smoothie từ sữa hạt" loading="lazy" />
+        </div>
+        <div class="recipe-card-body">
+          <div class="recipe-card-cats"><span class="tag">Workout</span><span class="tag">Protein cao</span></div>
+          <h4>Smoothie Óc Chó Chuối</h4>
+          <p>Kết hợp Dana Óc Chó với chuối và yến mạch tạo nên bữa ăn nhẹ sau tập giàu Omega-3.</p>
+          <div class="recipe-card-footer">
+            <span class="recipe-kcal">🌱 ~280 kcal / ly</span>
+            <a href="blog.html" class="read-more">Xem công thức <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <div class="recipe-card">
+        <div class="recipe-card-img">
+          <img src="assets/images/blog/blog3.png" alt="Sữa hạt buổi tối" loading="lazy" />
+        </div>
+        <div class="recipe-card-body">
+          <div class="recipe-card-cats"><span class="tag">Buổi tối</span><span class="tag">An thần</span></div>
+          <h4>Sữa Hạt Sen Ấm Mật Ong</h4>
+          <p>Hâm nóng Dana Hạt Sen, thêm chút mật ong và bột quế. Công thức dưỡng tâm trước giờ ngủ.</p>
+          <div class="recipe-card-footer">
+            <span class="recipe-kcal">🌱 ~90 kcal / ly</span>
+            <a href="blog.html" class="read-more">Xem công thức <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== COMMITMENTS =================== -->
+<section class="commitments-section">
+  <div class="container">
+    <div class="section-header" data-reveal="up">
+      <span class="section-label">Cam Kết</span>
+      <h2>3 Cam Kết Của <span class="text-gradient">Dana</span></h2>
+      <p>Mỗi chai sữa hạt là lời hứa về chất lượng, sức khỏe và trách nhiệm với môi trường.</p>
+    </div>
+    <div class="commitments-grid" data-stagger>
+      <div class="commitment-card">
+        <div class="commitment-icon">🌾</div>
+        <h4>Nguyên Liệu Sạch – Nguồn Gốc Rõ Ràng</h4>
+        <p>Toàn bộ hạt được tuyển chọn từ các vùng trồng có chứng nhận an toàn thực phẩm, không thuốc bảo vệ thực vật tồn dư.</p>
+      </div>
+      <div class="commitment-card">
+        <div class="commitment-icon">🧪</div>
+        <h4>Dinh Dưỡng Khoa Học – Không Chất Nhân Tạo</h4>
+        <p>Công thức được tư vấn bởi chuyên gia dinh dưỡng, cân bằng protein – chất béo – carb tự nhiên, không đường nhân tạo.</p>
+      </div>
+      <div class="commitment-card">
+        <div class="commitment-icon">♻️</div>
+        <h4>Bao Bì Xanh – Thân Thiện Môi Trường</h4>
+        <p>Chai thủy tinh tái sử dụng, túi đựng từ vật liệu sinh học phân hủy. Dana nói không với nhựa dùng một lần.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== ECOSYSTEM =================== -->
+<section class="ecosystem-section">
+  <div class="container">
+    <div class="section-header" data-reveal="up">
+      <span class="section-label" style="background:rgba(168,197,175,0.2);color:var(--sage-light)">Đối Tác & Chứng Nhận</span>
+      <h2>Được Tin Tưởng Bởi</h2>
+      <p style="color:rgba(255,255,255,0.6)">Dana tự hào hợp tác cùng các đơn vị uy tín trong ngành thực phẩm lành mạnh.</p>
+    </div>
+    <div style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-top:32px" data-stagger>
+      <div style="background:rgba(255,255,255,0.08);border-radius:16px;padding:24px 40px;text-align:center;color:rgba(255,255,255,0.7);font-weight:600;border:1px solid rgba(255,255,255,0.12)">🌱 Organic Cert.</div>
+      <div style="background:rgba(255,255,255,0.08);border-radius:16px;padding:24px 40px;text-align:center;color:rgba(255,255,255,0.7);font-weight:600;border:1px solid rgba(255,255,255,0.12)">🏥 Bộ Y Tế VN</div>
+      <div style="background:rgba(255,255,255,0.08);border-radius:16px;padding:24px 40px;text-align:center;color:rgba(255,255,255,0.7);font-weight:600;border:1px solid rgba(255,255,255,0.12)">🇻🇳 ATTP Quốc Gia</div>
+      <div style="background:rgba(255,255,255,0.08);border-radius:16px;padding:24px 40px;text-align:center;color:rgba(255,255,255,0.7);font-weight:600;border:1px solid rgba(255,255,255,0.12)">♻️ Green Label</div>
+      <div style="background:rgba(255,255,255,0.08);border-radius:16px;padding:24px 40px;text-align:center;color:rgba(255,255,255,0.7);font-weight:600;border:1px solid rgba(255,255,255,0.12)">🌾 Non-GMO</div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== BLOG SECTION =================== -->
+<section class="blog-section">
+  <div class="container">
+    <div class="section-header" data-reveal="up">
+      <span class="section-label">Blog Dinh Dưỡng</span>
+      <h2>Sống Khoẻ Cùng Dana</h2>
+      <p>Kiến thức dinh dưỡng, công thức sáng tạo và lối sống khoẻ mạnh từ đội ngũ chuyên gia của chúng tôi.</p>
+    </div>
+    <div class="blog-cards" data-stagger>
+      <a href="blog.html" class="blog-card">
+        <div class="blog-card-img">
+          <img src="assets/images/blog/blog1.png" alt="Lợi ích sữa hạt" loading="lazy" />
+          <span class="blog-card-cat">Dinh Dưỡng</span>
+        </div>
+        <div class="blog-card-body">
+          <p class="blog-meta">07/04/2026 · 5 phút đọc</p>
+          <h4>10 Lý Do Nên Chuyển Sang Sữa Hạt Mỗi Ngày</h4>
+          <p>Từ việc cải thiện tiêu hóa đến tăng cường miễn dịch, sữa hạt mang lại nhiều lợi ích bất ngờ...</p>
+          <span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+        </div>
+      </a>
+      <a href="blog.html" class="blog-card">
+        <div class="blog-card-img">
+          <img src="assets/images/blog/blog2.png" alt="Sữa hạt cho gym" loading="lazy" />
+          <span class="blog-card-cat">Fitness</span>
+        </div>
+        <div class="blog-card-body">
+          <p class="blog-meta">05/04/2026 · 4 phút đọc</p>
+          <h4>Sữa Hạt Có Đủ Protein Cho Người Tập Gym Không?</h4>
+          <p>Phân tích chi tiết hàm lượng protein trong từng loại sữa hạt và cách tối ưu cho người luyện tập...</p>
+          <span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+        </div>
+      </a>
+      <a href="blog.html" class="blog-card">
+        <div class="blog-card-img">
+          <img src="assets/images/blog/blog3.png" alt="Sữa hạt cho trẻ em" loading="lazy" />
+          <span class="blog-card-cat">Gia Đình</span>
+        </div>
+        <div class="blog-card-body">
+          <p class="blog-meta">03/04/2026 · 6 phút đọc</p>
+          <h4>Trẻ Em Uống Sữa Hạt: Điều Cha Mẹ Cần Biết</h4>
+          <p>Hướng dẫn an toàn, lợi ích và cách chọn loại sữa hạt phù hợp với từng độ tuổi của trẻ...</p>
+          <span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
+        </div>
+      </a>
+    </div>
+    <div class="text-center mt-8" data-reveal="up">
+      <a href="blog.html" class="btn btn-secondary">Xem tất cả bài viết →</a>
+    </div>
+  </div>
+</section>
+
+<!-- =================== CTA BANNER =================== -->
+<section class="cta-banner">
+  <div class="container" data-reveal="scale">
+    <span class="section-label" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3)">Đặt hàng ngay hôm nay</span>
+    <h2>Miễn Phí Vận Chuyển<br/> Cho Đơn Từ 500K</h2>
+    <p>Giao hàng tận nhà tại TP.HCM trong vòng 2–4 tiếng. Đổi trả dễ dàng trong 24h nếu không hài lòng.</p>
+    <div class="btn-actions">
+      <div class="btn-magnetic"><a href="products.html" class="btn btn-outline">Mua ngay</a></div>
+      <div class="btn-magnetic"><a href="contact.html" class="btn" style="background:var(--cream);color:var(--sage-dark);font-weight:700">Liên hệ tư vấn</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== FOOTER =================== -->
+<footer class="footer">
+  <div class="container footer-main">
+    <div class="footer-brand">
+      <div class="nav-logo">
+        <div class="logo-icon">D</div>
+        <span>Dana</span>
+      </div>
+      <p>Sữa Hạt Dana – Thức uống dinh dưỡng thuần tự nhiên dành cho lối sống lành mạnh của người Việt.</p>
+      <div class="social-links">
+        <a href="#" class="social-link" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        </a>
+        <a href="#" class="social-link" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        </a>
+        <a href="#" class="social-link" aria-label="TikTok">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+        </a>
+        <a href="#" class="social-link" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h5>Sản Phẩm</h5>
+      <ul>
+        <li><a href="products.html">Sữa Hạnh Nhân</a></li>
+        <li><a href="products.html">Sữa Hạt Điều</a></li>
+        <li><a href="products.html">Sữa Óc Chó</a></li>
+        <li><a href="products.html">Sữa Hạt Sen</a></li>
+        <li><a href="products.html">Sữa Yến Mạch</a></li>
+        <li><a href="products.html">Combo & Quà tặng</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Về Dana</h5>
+      <ul>
+        <li><a href="about.html">Câu chuyện thương hiệu</a></li>
+        <li><a href="blog.html">Blog dinh dưỡng</a></li>
+        <li><a href="contact.html">Liên hệ</a></li>
+        <li><a href="#">Chính sách đổi trả</a></li>
+        <li><a href="#">Chính sách bảo mật</a></li>
+        <li><a href="#">Điều khoản dịch vụ</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Liên Hệ</h5>
+      <div class="footer-contact-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>53/33 Trần Khánh Dư, P. Tân Định, Q.1, TP.HCM</span>
+      </div>
+      <div class="footer-contact-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 14a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 3.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.7 17.5v-.58z"/></svg>
+        <span>0974 445 624</span>
+      </div>
+      <div class="footer-contact-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span>hello@hatdana.id.vn</span>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="footer-bottom">
+      <p>© 2026 Sữa Hạt Dana. Bảo lưu mọi quyền.</p>
+      <p class="powered">Thương hiệu Việt Nam 🇻🇳</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Toast Container -->
+<div class="toast-container"></div>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/cart.js"></script>
+<script src="assets/js/account.js"></script>
+</body>
+</html>
