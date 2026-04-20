@@ -1,0 +1,18 @@
+# ===================================================
+# Cloudflare Pages Configuration
+# hnguyenworks.id.vn - Sữa Hạt Dana
+# ===================================================
+
+name = "com-334"
+compatibility_date = "2024-01-01"
+
+# D1 Database Binding
+[[d1_databases]]
+binding = "DB"
+database_name = "dana-db"
+database_id = ""  # Bro điền ID sau khi tạo D1 trên Dashboard
+
+# R2 Storage Binding
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "dana-images"

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Giỏ Hàng – Sữa Hạt Dana</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+</head>
+<body>
+<div id="cursor"></div><div id="cursor-trail"></div>
+<header class="navbar scrolled"><div class="nav-inner"><a href="index.html" class="nav-logo"><div class="logo-icon">D</div><span>Dana</span></a><nav class="nav-links"><a href="index.html">Trang chủ</a><a href="products.html">Sản phẩm</a><a href="blog.html">Blog</a><a href="about.html">Giới thiệu</a></nav><div class="nav-actions"><a href="cart.html" class="nav-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="cart-badge">0</span></a><a href="account.html" class="nav-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a></div></div></header>
+
+<section class="cart-page" style="min-height:80vh;padding-bottom:80px">
+  <div class="container" style="padding-top:40px">
+    <h1 style="font-size:clamp(1.8rem,3vw,2.5rem);margin-bottom:8px">Giỏ Hàng</h1>
+    <p style="margin-bottom:40px;color:var(--gray)">Kiểm tra lại đơn hàng trước khi thanh toán</p>
+
+    <!-- Empty State -->
+    <div id="cart-empty" class="hidden" style="text-align:center;padding:80px 0">
+      <div style="font-size:5rem;margin-bottom:20px">🛒</div>
+      <h3>Giỏ hàng đang trống</h3>
+      <p style="margin:12px 0 28px">Hãy thêm một vài sản phẩm Dana nhé!</p>
+      <a href="products.html" class="btn btn-primary">Khám phá sản phẩm</a>
+    </div>
+
+    <!-- Cart Layout -->
+    <div class="cart-layout" id="cart-summary" style="display:none">
+      <div>
+        <div id="cart-list"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:20px">
+          <a href="products.html" class="btn btn-secondary">← Tiếp tục mua sắm</a>
+          <button onclick="Cart.clearCart();renderCartPage();window.showToast('Đã xóa toàn bộ giỏ hàng','🗑️')" class="btn" style="background:var(--cream);color:var(--gray);border:2px solid var(--gray-light)">Xóa tất cả</button>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="order-summary">
+        <h4 style="margin-bottom:24px;font-size:1.2rem">Tóm tắt đơn hàng</h4>
+        <div class="coupon-input">
+          <input class="form-control" type="text" id="coupon-code" placeholder="Nhập mã giảm giá..." style="font-size:0.9rem;padding:10px 14px" />
+          <button class="btn btn-secondary" onclick="applyCoupon()" style="padding:10px 18px;white-space:nowrap">Áp dụng</button>
+        </div>
+        <div class="summary-row"><span>Tạm tính</span><span id="subtotal-val">0đ</span></div>
+        <div class="summary-row"><span>Phí vận chuyển</span><span id="shipping-val" style="color:var(--sage);font-weight:600">30.000đ</span></div>
+        <div class="summary-row total"><span>Tổng cộng</span><span id="total-val" style="color:var(--sage-dark)">0đ</span></div>
+        <button class="btn btn-primary w-100" style="justify-content:center;margin-top:16px;font-size:1rem;padding:16px" onclick="checkout()">
+          🛒 Thanh toán ngay
+        </button>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:16px">
+          <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 20'><text y='16' font-size='12' fill='%236B8F71' font-weight='bold'>MoMo</text></svg>" alt="MoMo" style="height:24px;width:auto;object-fit:contain" />
+          <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 20'><text y='16' font-size='11' fill='%236B8F71' font-weight='bold'>VNPay</text></svg>" alt="VNPay" style="height:24px;width:auto;object-fit:contain" />
+          <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 20'><text y='16' font-size='11' fill='%236B8F71' font-weight='bold'>COD</text></svg>" alt="COD" style="height:24px;width:auto;object-fit:contain" />
+        </div>
+        <p style="text-align:center;font-size:0.75rem;color:var(--gray);margin-top:8px">Thanh toán an toàn · Mã hóa SSL</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer" style="padding:40px 0"><div class="container"><div class="footer-bottom"><p>© 2026 Sữa Hạt Dana</p><p class="powered">Thương hiệu Việt Nam 🇻🇳</p></div></div></footer>
+
+<div class="toast-container"></div>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/cart.js"></script>
+<script src="assets/js/account.js"></script>
+<script>
+function applyCoupon() {
+  const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+  if (code === 'DANA10') window.showToast('Áp dụng mã DANA10 thành công! Giảm 10%','🎉');
+  else window.showToast('Mã giảm giá không hợp lệ','❌');
+}
+async function checkout() {
+  const cart = Cart.getCart();
+  if (cart.length === 0) { window.showToast('Giỏ hàng trống!','❌'); return; }
+
+  // Prompt for customer info
+  const name = prompt('Họ và tên người nhận:');
+  if (!name) return;
+  const phone = prompt('Số điện thoại:');
+  if (!phone) return;
+  const address = prompt('Địa chỉ giao hàng:');
+
+  const subtotal = Cart.getTotal();
+  const shipping = subtotal >= 500000 ? 0 : 30000;
+  const total = subtotal + shipping;
+
+  try {
+    const token = localStorage.getItem('dana_auth_token');
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerName: name,
+        customerPhone: phone,
+        customerEmail: '',
+        customerAddress: address || '',
+        items: cart,
+        subtotal, shipping, total,
+        token: token || null
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      window.showToast(`Đặt hàng thành công! Mã đơn: ${data.orderId} 🎉`, '✅', 6000);
+      Cart.clearCart();
+      renderCartPage();
+    } else {
+      window.showToast(data.message || 'Có lỗi xảy ra.', '❌');
+    }
+  } catch (err) {
+    window.showToast('Lỗi kết nối server. Vui lòng thử lại.', '❌');
+  }
+}
+</script>
+</body>
+</html>

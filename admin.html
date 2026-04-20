@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard – Sữa Hạt Dana</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    /* Admin-specific styles */
+    body { cursor: default !important; background: #0f1117; color: #e2e8f0; }
+    * { cursor: default !important; }
+    a, button, input, select, textarea { cursor: pointer !important; }
+    #cursor, #cursor-trail { display: none !important; }
+
+    .admin-login-wrap {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #0f1117 0%, #1a1d2e 50%, #0f1117 100%);
+    }
+    .admin-login-card {
+      background: rgba(30,33,48,0.95); border: 1px solid rgba(107,143,113,0.2);
+      border-radius: 24px; padding: 48px 40px; width: 420px; max-width: 90vw;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5); backdrop-filter: blur(20px);
+    }
+    .admin-login-card h2 { color: #fff; text-align: center; margin-bottom: 8px; font-size: 1.8rem; }
+    .admin-login-card .subtitle { text-align: center; color: #64748b; margin-bottom: 32px; font-size: 0.9rem; }
+    .admin-login-card .logo-lock { text-align: center; font-size: 3rem; margin-bottom: 16px; }
+
+    .admin-form-group { margin-bottom: 20px; }
+    .admin-form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #94a3b8; margin-bottom: 6px; }
+    .admin-input {
+      width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(107,143,113,0.3);
+      background: rgba(15,17,23,0.8); color: #fff; font-size: 0.95rem; transition: border-color 0.3s;
+      font-family: inherit;
+    }
+    .admin-input:focus { outline: none; border-color: #6B8F71; box-shadow: 0 0 0 3px rgba(107,143,113,0.15); }
+    .admin-btn {
+      width: 100%; padding: 14px; border-radius: 12px; border: none;
+      background: linear-gradient(135deg, #6B8F71, #2D4A35); color: #fff;
+      font-size: 1rem; font-weight: 700; transition: all 0.3s; margin-top: 8px;
+    }
+    .admin-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(107,143,113,0.4); }
+    .admin-error { color: #f87171; font-size: 0.85rem; margin-top: 8px; display: none; text-align: center; }
+
+    /* Dashboard */
+    .admin-wrap { display: none; min-height: 100vh; }
+    .admin-sidebar {
+      position: fixed; top: 0; left: 0; width: 260px; height: 100vh;
+      background: rgba(15,17,23,0.98); border-right: 1px solid rgba(107,143,113,0.15);
+      padding: 24px 0; z-index: 100; overflow-y: auto;
+    }
+    .admin-sidebar .brand {
+      display: flex; align-items: center; gap: 12px; padding: 0 24px; margin-bottom: 32px;
+    }
+    .admin-sidebar .brand-icon {
+      width: 42px; height: 42px; background: #6B8F71; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; color: #fff;
+      font-weight: 800; font-size: 1.1rem;
+    }
+    .admin-sidebar .brand span { font-weight: 700; color: #fff; font-size: 1.1rem; }
+    .admin-sidebar .brand small { display: block; font-size: 0.7rem; color: #64748b; font-weight: 400; }
+
+    .admin-nav a {
+      display: flex; align-items: center; gap: 12px; padding: 12px 24px;
+      color: #94a3b8; font-size: 0.9rem; font-weight: 500; transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .admin-nav a:hover { color: #e2e8f0; background: rgba(107,143,113,0.08); }
+    .admin-nav a.active {
+      color: #6B8F71; background: rgba(107,143,113,0.12); border-left-color: #6B8F71;
+      font-weight: 600;
+    }
+    .admin-nav a svg { width: 20px; height: 20px; stroke-width: 1.8; flex-shrink: 0; }
+    .admin-nav .badge-count {
+      margin-left: auto; background: #f87171; color: #fff; font-size: 0.65rem;
+      padding: 2px 8px; border-radius: 99px; font-weight: 700;
+    }
+
+    .admin-main { margin-left: 260px; padding: 32px 40px; min-height: 100vh; }
+    .admin-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .admin-header h1 { font-size: 1.6rem; color: #fff; }
+    .admin-header .admin-info { display: flex; align-items: center; gap: 12px; }
+    .admin-header .admin-avatar {
+      width: 38px; height: 38px; border-radius: 10px; background: #6B8F71;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 0.9rem;
+    }
+    .admin-header .admin-name { font-weight: 600; color: #e2e8f0; font-size: 0.9rem; }
+    .admin-logout-btn {
+      padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(248,113,113,0.3);
+      background: rgba(248,113,113,0.1); color: #f87171; font-size: 0.8rem; font-weight: 600;
+    }
+    .admin-logout-btn:hover { background: rgba(248,113,113,0.2); }
+
+    /* Stats Cards */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px; }
+    .stat-card {
+      background: rgba(30,33,48,0.8); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px; padding: 24px; position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #6B8F71, #A8C5AF); border-radius: 3px 3px 0 0;
+    }
+    .stat-card .stat-label { font-size: 0.8rem; color: #64748b; font-weight: 500; margin-bottom: 8px; }
+    .stat-card .stat-value { font-size: 2rem; font-weight: 800; color: #fff; font-family: var(--font-heading); }
+    .stat-card .stat-icon { position: absolute; top: 20px; right: 20px; font-size: 2rem; opacity: 0.3; }
+
+    /* Data Tables */
+    .admin-panel {
+      background: rgba(30,33,48,0.8); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px; overflow: hidden; margin-bottom: 24px;
+    }
+    .admin-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .admin-panel-header h3 { font-size: 1.1rem; color: #fff; }
+
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th {
+      text-align: left; padding: 12px 24px; font-size: 0.75rem; font-weight: 600;
+      color: #64748b; text-transform: uppercase; letter-spacing: 0.08em;
+      border-bottom: 1px solid rgba(255,255,255,0.06); font-family: var(--font-body);
+    }
+    .admin-table td {
+      padding: 14px 24px; font-size: 0.88rem; color: #cbd5e1;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .admin-table tr:hover td { background: rgba(107,143,113,0.04); }
+
+    .status-badge {
+      padding: 4px 12px; border-radius: 99px; font-size: 0.72rem; font-weight: 700;
+      display: inline-block; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .status-pending { background: rgba(251,191,36,0.15); color: #fbbf24; }
+    .status-confirmed { background: rgba(107,143,113,0.15); color: #6B8F71; }
+    .status-delivered { background: rgba(56,189,248,0.15); color: #38bdf8; }
+    .status-cancelled { background: rgba(248,113,113,0.15); color: #f87171; }
+
+    .role-admin { color: #f59e0b; font-weight: 600; }
+    .role-user { color: #94a3b8; }
+
+    .section-tab { display: none; }
+    .section-tab.active { display: block; }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .admin-sidebar { width: 100%; height: auto; position: relative; }
+      .admin-main { margin-left: 0; padding: 20px; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .admin-table { font-size: 0.8rem; }
+      .admin-table th, .admin-table td { padding: 10px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- =================== LOGIN SCREEN =================== -->
+<div class="admin-login-wrap" id="admin-login">
+  <div class="admin-login-card">
+    <div class="logo-lock">🔒</div>
+    <h2>Admin Panel</h2>
+    <p class="subtitle">Đăng nhập bằng tài khoản quản trị viên</p>
+    <form id="admin-login-form">
+      <div class="admin-form-group">
+        <label>Email</label>
+        <input class="admin-input" type="email" id="adm-email" placeholder="admin@hnguyenworks.id.vn" required />
+      </div>
+      <div class="admin-form-group">
+        <label>Mật khẩu</label>
+        <input class="admin-input" type="password" id="adm-password" placeholder="••••••••" required />
+      </div>
+      <p class="admin-error" id="adm-error"></p>
+      <button type="submit" class="admin-btn">Đăng nhập</button>
+    </form>
+    <p style="text-align:center;margin-top:24px;font-size:0.8rem;color:#475569">
+      <a href="index.html" style="color:#6B8F71">← Quay về trang chủ</a>
+    </p>
+  </div>
+</div>
+
+<!-- =================== DASHBOARD =================== -->
+<div class="admin-wrap" id="admin-dashboard">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="brand">
+      <div class="brand-icon">D</div>
+      <div><span>Dana Admin</span><small>Bảng điều khiển</small></div>
+    </div>
+    <nav class="admin-nav">
+      <a href="#" class="active" data-section="overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Tổng quan
+      </a>
+      <a href="#" data-section="users">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Khách hàng
+        <span class="badge-count" id="badge-users">0</span>
+      </a>
+      <a href="#" data-section="orders">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        Đơn hàng
+        <span class="badge-count" id="badge-orders">0</span>
+      </a>
+      <a href="#" data-section="contacts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Liên hệ
+        <span class="badge-count" id="badge-contacts">0</span>
+      </a>
+      <a href="#" data-section="products">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Sản phẩm
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <div class="admin-header">
+      <h1 id="page-title">Tổng quan</h1>
+      <div class="admin-info">
+        <div><span class="admin-name" id="admin-name-display">Admin</span></div>
+        <div class="admin-avatar" id="admin-avatar">A</div>
+        <button class="admin-logout-btn" onclick="adminLogout()">Đăng xuất</button>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="section-tab active" id="sec-overview">
+      <div class="stats-row" id="stats-grid">
+        <div class="stat-card"><span class="stat-icon">👥</span><div class="stat-label">Khách hàng</div><div class="stat-value" id="st-users">—</div></div>
+        <div class="stat-card"><span class="stat-icon">📦</span><div class="stat-label">Đơn hàng</div><div class="stat-value" id="st-orders">—</div></div>
+        <div class="stat-card"><span class="stat-icon">💰</span><div class="stat-label">Doanh thu</div><div class="stat-value" id="st-revenue">—</div></div>
+        <div class="stat-card"><span class="stat-icon">🌿</span><div class="stat-label">Sản phẩm</div><div class="stat-value" id="st-products">—</div></div>
+      </div>
+      <div class="admin-panel">
+        <div class="admin-panel-header"><h3>Đơn hàng gần đây</h3></div>
+        <table class="admin-table">
+          <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tổng tiền</th><th>Trạng thái</th><th>Ngày</th></tr></thead>
+          <tbody id="recent-orders-body"><tr><td colspan="5" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="section-tab" id="sec-users">
+      <div class="admin-panel">
+        <div class="admin-panel-header"><h3>Danh sách tài khoản</h3></div>
+        <table class="admin-table">
+          <thead><tr><th>Tên</th><th>Email</th><th>SĐT</th><th>Vai trò</th><th>Ngày tạo</th></tr></thead>
+          <tbody id="users-body"><tr><td colspan="5" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="section-tab" id="sec-orders">
+      <div class="admin-panel">
+        <div class="admin-panel-header"><h3>Tất cả đơn hàng</h3></div>
+        <table class="admin-table">
+          <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>SĐT</th><th>Sản phẩm</th><th>Tổng</th><th>Trạng thái</th><th>Ngày</th></tr></thead>
+          <tbody id="orders-body"><tr><td colspan="7" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONTACTS -->
+    <div class="section-tab" id="sec-contacts">
+      <div class="admin-panel">
+        <div class="admin-panel-header"><h3>Tin nhắn liên hệ</h3></div>
+        <table class="admin-table">
+          <thead><tr><th>Tên</th><th>Email</th><th>Chủ đề</th><th>Nội dung</th><th>Ngày</th><th>Trạng thái</th></tr></thead>
+          <tbody id="contacts-body"><tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="section-tab" id="sec-products">
+      <div class="admin-panel">
+        <div class="admin-panel-header"><h3>Quản lý sản phẩm</h3></div>
+        <table class="admin-table">
+          <thead><tr><th>Ảnh</th><th>Tên SP</th><th>Danh mục</th><th>Giá</th><th>Badge</th><th>Trạng thái</th></tr></thead>
+          <tbody id="products-body"><tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+/* ===================================================
+   ADMIN DASHBOARD - Client-side Logic
+   Security: All data fetched via authenticated API
+   =================================================== */
+
+const API_BASE = '/api';
+let adminToken = localStorage.getItem('dana_admin_token');
+
+// =================== LOGIN ===================
+document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('adm-email').value.trim();
+  const password = document.getElementById('adm-password').value;
+  const errorEl = document.getElementById('adm-error');
+
+  try {
+    const res = await fetch(`${API_BASE}/auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login', email, password })
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      errorEl.textContent = data.message;
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    // Check if user is admin
+    if (data.user.role !== 'admin') {
+      errorEl.textContent = 'Tài khoản này không phải quản trị viên.';
+      errorEl.style.display = 'block';
+      // Immediately destroy the session for non-admin
+      await fetch(`${API_BASE}/auth`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'logout', token: data.token })
+      });
+      return;
+    }
+
+    adminToken = data.token;
+    localStorage.setItem('dana_admin_token', adminToken);
+    localStorage.setItem('dana_admin_name', data.user.name);
+    showDashboard(data.user);
+  } catch (err) {
+    errorEl.textContent = 'Lỗi kết nối server.';
+    errorEl.style.display = 'block';
+  }
+});
+
+// =================== CHECK EXISTING SESSION ===================
+async function checkSession() {
+  if (!adminToken) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'verify', token: adminToken })
+    });
+    const data = await res.json();
+
+    if (data.ok && data.user.role === 'admin') {
+      showDashboard(data.user);
+    } else {
+      adminToken = null;
+      localStorage.removeItem('dana_admin_token');
+    }
+  } catch (err) {
+    // Network error - stay on login
+  }
+}
+checkSession();
+
+// =================== SHOW DASHBOARD ===================
+function showDashboard(user) {
+  document.getElementById('admin-login').style.display = 'none';
+  document.getElementById('admin-dashboard').style.display = 'block';
+  document.getElementById('admin-name-display').textContent = user.name;
+  document.getElementById('admin-avatar').textContent = user.name.charAt(0).toUpperCase();
+  loadSection('overview');
+}
+
+// =================== LOGOUT ===================
+async function adminLogout() {
+  if (adminToken) {
+    await fetch(`${API_BASE}/auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'logout', token: adminToken })
+    }).catch(() => {});
+  }
+  adminToken = null;
+  localStorage.removeItem('dana_admin_token');
+  localStorage.removeItem('dana_admin_name');
+  location.reload();
+}
+
+// =================== NAVIGATION ===================
+document.querySelectorAll('.admin-nav a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const section = link.dataset.section;
+    document.querySelectorAll('.admin-nav a').forEach(a => a.classList.remove('active'));
+    link.classList.add('active');
+    loadSection(section);
+  });
+});
+
+// =================== LOAD SECTION DATA ===================
+async function loadSection(section) {
+  const titles = { overview: 'Tổng quan', users: 'Khách hàng', orders: 'Đơn hàng', contacts: 'Tin nhắn liên hệ', products: 'Quản lý sản phẩm' };
+  document.getElementById('page-title').textContent = titles[section] || section;
+
+  document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + section)?.classList.add('active');
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/dashboard?section=${section}&token=${adminToken}`);
+    const data = await res.json();
+
+    if (!data.ok) {
+      if (res.status === 403) { adminLogout(); return; }
+      return;
+    }
+
+    if (section === 'overview') renderOverview(data);
+    if (section === 'users') renderUsers(data.users);
+    if (section === 'orders') renderOrders(data.orders);
+    if (section === 'contacts') renderContacts(data.contacts);
+    if (section === 'products') renderProducts(data.products);
+  } catch (err) {
+    console.error('Load error:', err);
+  }
+}
+
+// =================== RENDER FUNCTIONS ===================
+function formatPrice(num) {
+  return (num || 0).toLocaleString('vi-VN') + 'đ';
+}
+function formatDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+function statusClass(s) {
+  const map = { pending: 'status-pending', confirmed: 'status-confirmed', delivered: 'status-delivered', cancelled: 'status-cancelled' };
+  return map[s] || 'status-pending';
+}
+function statusText(s) {
+  const map = { pending: 'Chờ xử lý', confirmed: 'Đã xác nhận', delivered: 'Đã giao', cancelled: 'Đã hủy' };
+  return map[s] || s;
+}
+
+function renderOverview(data) {
+  const s = data.stats;
+  document.getElementById('st-users').textContent = s.totalUsers;
+  document.getElementById('st-orders').textContent = s.totalOrders;
+  document.getElementById('st-revenue').textContent = formatPrice(s.totalRevenue);
+  document.getElementById('st-products').textContent = s.totalProducts;
+
+  // Update sidebar badges
+  document.getElementById('badge-users').textContent = s.totalUsers;
+  document.getElementById('badge-orders').textContent = s.pendingOrders;
+  document.getElementById('badge-contacts').textContent = s.unreadContacts;
+
+  // Recent orders
+  const tbody = document.getElementById('recent-orders-body');
+  if (!data.recentOrders || data.recentOrders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#64748b">Chưa có đơn hàng</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.recentOrders.map(o => `
+    <tr>
+      <td style="font-weight:600;color:#6B8F71">${o.id}</td>
+      <td>${o.customer_name}</td>
+      <td style="font-weight:600">${formatPrice(o.total)}</td>
+      <td><span class="status-badge ${statusClass(o.status)}">${statusText(o.status)}</span></td>
+      <td>${formatDate(o.created_at)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('users-body');
+  if (!users || users.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#64748b">Chưa có khách hàng</td></tr>';
+    return;
+  }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td style="font-weight:600">${u.name}</td>
+      <td>${u.email}</td>
+      <td>${u.phone || '—'}</td>
+      <td><span class="role-${u.role}">${u.role === 'admin' ? '🔑 Admin' : 'Khách hàng'}</span></td>
+      <td>${formatDate(u.created_at)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderOrders(orders) {
+  const tbody = document.getElementById('orders-body');
+  if (!orders || orders.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#64748b">Chưa có đơn hàng</td></tr>';
+    return;
+  }
+  tbody.innerHTML = orders.map(o => {
+    const itemNames = o.items.map(i => `${i.name} x${i.qty}`).join(', ');
+    return `
+    <tr>
+      <td style="font-weight:600;color:#6B8F71;font-size:0.8rem">${o.id}</td>
+      <td>${o.customer_name}</td>
+      <td>${o.customer_phone}</td>
+      <td style="font-size:0.82rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${itemNames}">${itemNames}</td>
+      <td style="font-weight:600">${formatPrice(o.total)}</td>
+      <td>
+        <select onchange="updateOrderStatus('${o.id}', this.value)" style="background:transparent;color:#cbd5e1;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 8px;font-size:0.8rem">
+          <option value="pending" ${o.status==='pending'?'selected':''}>Chờ xử lý</option>
+          <option value="confirmed" ${o.status==='confirmed'?'selected':''}>Đã xác nhận</option>
+          <option value="delivered" ${o.status==='delivered'?'selected':''}>Đã giao</option>
+          <option value="cancelled" ${o.status==='cancelled'?'selected':''}>Đã hủy</option>
+        </select>
+      </td>
+      <td>${formatDate(o.created_at)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderContacts(contacts) {
+  const tbody = document.getElementById('contacts-body');
+  if (!contacts || contacts.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">Chưa có tin nhắn</td></tr>';
+    return;
+  }
+  tbody.innerHTML = contacts.map(c => `
+    <tr style="opacity:${c.is_read ? 0.6 : 1}">
+      <td style="font-weight:600">${c.name}</td>
+      <td>${c.email}</td>
+      <td>${c.subject || '—'}</td>
+      <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.message}">${c.message}</td>
+      <td>${formatDate(c.created_at)}</td>
+      <td>${c.is_read
+        ? '<span style="color:#6B8F71;font-size:0.8rem">Đã đọc ✓</span>'
+        : `<button onclick="markRead(${c.id})" style="background:rgba(107,143,113,0.15);color:#6B8F71;border:none;padding:4px 12px;border-radius:6px;font-size:0.8rem;font-weight:600">Đánh dấu đã đọc</button>`
+      }</td>
+    </tr>
+  `).join('');
+}
+
+function renderProducts(products) {
+  const tbody = document.getElementById('products-body');
+  if (!products || products.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">Chưa có sản phẩm</td></tr>';
+    return;
+  }
+  tbody.innerHTML = products.map(p => `
+    <tr>
+      <td><img src="${p.image_url}" alt="${p.name}" style="width:50px;height:50px;border-radius:8px;object-fit:cover" /></td>
+      <td style="font-weight:600">${p.name}</td>
+      <td>${p.category || '—'}</td>
+      <td style="font-weight:600;color:#6B8F71">${formatPrice(p.price)}</td>
+      <td>${p.badge ? `<span class="status-badge status-confirmed">${p.badge}</span>` : '—'}</td>
+      <td>${p.is_active ? '<span style="color:#6B8F71">✓ Active</span>' : '<span style="color:#f87171">✗ Ẩn</span>'}</td>
+    </tr>
+  `).join('');
+}
+
+// =================== ADMIN ACTIONS ===================
+async function updateOrderStatus(orderId, status) {
+  await fetch(`${API_BASE}/admin/dashboard?token=${adminToken}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'updateOrderStatus', orderId, status })
+  });
+}
+
+async function markRead(contactId) {
+  await fetch(`${API_BASE}/admin/dashboard?token=${adminToken}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'markContactRead', contactId })
+  });
+  loadSection('contacts');
+}
+</script>
+</body>
+</html>
