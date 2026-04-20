@@ -5,6 +5,7 @@
 
 name = "com-334"
 compatibility_date = "2024-01-01"
+pages_build_output_dir = "."
 
 # D1 Database Binding
 [[d1_databases]]
