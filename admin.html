@@ -251,8 +251,36 @@
       <div class="admin-panel">
         <div class="admin-panel-header"><h3>Danh sách tài khoản</h3></div>
         <table class="admin-table">
-          <thead><tr><th>Tên</th><th>Email</th><th>SĐT</th><th>Vai trò</th><th>Ngày tạo</th></tr></thead>
-          <tbody id="users-body"><tr><td colspan="5" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
+          <thead><tr><th>Tên</th><th>Email</th><th>SĐT</th><th>Vai trò</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead>
+          <tbody id="users-body"><tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USER DETAILS -->
+    <div class="section-tab" id="sec-user-details">
+      <button class="admin-logout-btn" style="margin-bottom:20px;border-color:#6B8F71;color:#6B8F71;background:rgba(107,143,113,0.1)" onclick="loadSection('users')">← Quay lại danh sách</button>
+      
+      <div class="admin-panel" style="padding:24px">
+        <h3 style="color:#fff;margin-bottom:16px" id="ud-name">Tên khách hàng</h3>
+        <p style="color:#94a3b8;font-size:0.9rem;margin-bottom:8px">Email: <span id="ud-email" style="color:#e2e8f0"></span></p>
+        <p style="color:#94a3b8;font-size:0.9rem;margin-bottom:8px">SĐT: <span id="ud-phone" style="color:#e2e8f0"></span></p>
+        <p style="color:#94a3b8;font-size:0.9rem">Vai trò: <span id="ud-role" style="color:#e2e8f0"></span></p>
+      </div>
+
+      <div class="admin-panel">
+        <div class="admin-panel-header"><h3>Giỏ hàng hiện tại</h3></div>
+        <table class="admin-table">
+          <thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+          <tbody id="ud-cart-body"></tbody>
+        </table>
+      </div>
+
+      <div class="admin-panel">
+        <div class="admin-panel-header"><h3>Lịch sử giao dịch</h3></div>
+        <table class="admin-table">
+          <thead><tr><th>Mã đơn</th><th>Sản phẩm</th><th>Tổng</th><th>Trạng thái</th><th>Ngày đặt</th></tr></thead>
+          <tbody id="ud-orders-body"></tbody>
         </table>
       </div>
     </div>
@@ -481,7 +509,7 @@ function renderOverview(data) {
 function renderUsers(users) {
   const tbody = document.getElementById('users-body');
   if (!users || users.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#64748b">Chưa có khách hàng</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">Chưa có khách hàng</td></tr>';
     return;
   }
   tbody.innerHTML = users.map(u => `
@@ -491,8 +519,67 @@ function renderUsers(users) {
       <td>${u.phone || '—'}</td>
       <td><span class="role-${u.role}">${u.role === 'admin' ? '🔑 Admin' : 'Khách hàng'}</span></td>
       <td>${formatDate(u.created_at)}</td>
+      <td><button onclick="loadUserDetails('${u.id}')" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:none;padding:4px 12px;border-radius:6px;font-size:0.75rem;font-weight:600">Xem chi tiết</button></td>
     </tr>
   `).join('');
+}
+
+async function loadUserDetails(userId) {
+  document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-user-details').classList.add('active');
+  document.getElementById('page-title').textContent = 'Chi tiết tài khoản';
+
+  document.getElementById('ud-name').textContent = 'Đang tải...';
+  document.getElementById('ud-email').textContent = '...';
+  document.getElementById('ud-phone').textContent = '...';
+  document.getElementById('ud-role').textContent = '...';
+  document.getElementById('ud-cart-body').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#64748b">Đang tải...</td></tr>';
+  document.getElementById('ud-orders-body').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#64748b">Đang tải...</td></tr>';
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/dashboard?section=user_details&userId=${userId}&token=${adminToken}`);
+    const data = await res.json();
+    if (!data.ok) return;
+
+    // Info
+    document.getElementById('ud-name').textContent = data.user.name;
+    document.getElementById('ud-email').textContent = data.user.email;
+    document.getElementById('ud-phone').textContent = data.user.phone || '—';
+    document.getElementById('ud-role').innerHTML = `<span class="role-${data.user.role}">${data.user.role === 'admin' ? 'Admin' : 'Khách hàng'}</span>`;
+
+    // Cart
+    const cBody = document.getElementById('ud-cart-body');
+    if (!data.cart || data.cart.length === 0) {
+      cBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#64748b">Giỏ hàng trống</td></tr>';
+    } else {
+      cBody.innerHTML = data.cart.map(i => `
+        <tr>
+          <td style="font-weight:600">${i.name} ${i.variant !== 'Mặc định' ? `(${i.variant})` : ''}</td>
+          <td>${i.qty}</td>
+          <td>${formatPrice(i.price)}</td>
+          <td style="font-weight:600;color:#6B8F71">${formatPrice(i.price * i.qty)}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Orders
+    const oBody = document.getElementById('ud-orders-body');
+    if (!data.orders || data.orders.length === 0) {
+      oBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#64748b">Chưa có đơn hàng</td></tr>';
+    } else {
+      oBody.innerHTML = data.orders.map(o => {
+        const itemNames = o.items.map(i => `${i.name} x${i.qty}`).join(', ');
+        return `
+        <tr>
+          <td style="font-weight:600;color:#6B8F71;font-size:0.8rem">${o.id}</td>
+          <td style="font-size:0.82rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${itemNames}">${itemNames}</td>
+          <td style="font-weight:600">${formatPrice(o.total)}</td>
+          <td><span class="status-badge ${statusClass(o.status)}">${statusText(o.status)}</span></td>
+          <td>${formatDate(o.created_at)}</td>
+        </tr>`;
+      }).join('');
+    }
+  } catch (err) { }
 }
 
 function renderOrders(orders) {

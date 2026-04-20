@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   phone TEXT DEFAULT '',
   role TEXT DEFAULT 'user',
+  cart_items TEXT DEFAULT '[]',
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );

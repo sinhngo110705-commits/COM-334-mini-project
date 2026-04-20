@@ -7,7 +7,7 @@
 -- Password: DanaAdmin@2026 (SHA-256 hashed)
 -- QUAN TRỌNG: Đổi mật khẩu này ngay sau khi đăng nhập lần đầu!
 INSERT OR IGNORE INTO users (id, name, email, password_hash, phone, role) VALUES
-('admin_001', 'Admin Dana', 'admin@hnguyenworks.id.vn', '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', '0974445624', 'admin');
+('admin_001', 'Admin Dana', 'admin@hnguyenworks.id.vn', 'ea554d403eec8485c738aa8ec19bf7a6f5bd229b4b1d0f089a1eae749aff2115', '0974445624', 'admin');
 
 -- Sản phẩm mẫu (6 sản phẩm)
 INSERT OR IGNORE INTO products (id, name, description, price, original_price, category, image_url, badge, tags) VALUES

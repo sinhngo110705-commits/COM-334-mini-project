@@ -60,7 +60,7 @@ export async function onRequestPost(context) {
 
       // Create session
       const token = generateToken();
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
+      const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(); // 12 hours
       await env.DB.prepare(
         'INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)'
       ).bind(token, userId, expiresAt).run();
@@ -91,7 +91,7 @@ export async function onRequestPost(context) {
 
       // Create session token
       const token = generateToken();
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(); // 12 hours
 
       // Delete old sessions for this user (max 5 sessions)
       await env.DB.prepare('DELETE FROM sessions WHERE user_id = ? AND expires_at < datetime("now")').bind(user.id).run();

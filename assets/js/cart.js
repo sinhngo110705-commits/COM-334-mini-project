@@ -11,15 +11,53 @@ const Cart = (() => {
     catch { return []; }
   }
 
+  async function syncCartToServer(cart) {
+    const token = localStorage.getItem('dana_auth_token');
+    if (!token) return;
+    try {
+      await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, cart })
+      });
+    } catch {}
+  }
+
   function saveCart(cart) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
     updateCartBadge();
     dispatchCartEvent(cart);
+    syncCartToServer(cart);
   }
 
   function dispatchCartEvent(cart) {
     window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cart } }));
   }
+
+  async function loadCartFromServer() {
+    const token = localStorage.getItem('dana_auth_token');
+    if (!token) return;
+    try {
+      const res = await fetch(`/api/cart?token=${token}`);
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.cart)) {
+        // Merge local data with server data, prioritizing server data
+        // For simplicity, overwrite local if server has items
+        if (data.cart.length > 0) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data.cart));
+          updateCartBadge();
+          renderCartPage && renderCartPage();
+        } else {
+          // If server is empty but local has items, sync local to server
+          const localCart = getCart();
+          if (localCart.length > 0) syncCartToServer(localCart);
+        }
+      }
+    } catch {}
+  }
+
+  // Auto load from server if logged in
+  document.addEventListener('DOMContentLoaded', loadCartFromServer);
 
   function updateCartBadge() {
     const cart = getCart();

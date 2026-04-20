@@ -76,6 +76,27 @@ export async function onRequestGet(context) {
       return json({ ok: true, users: results });
     }
 
+    // ===== USER DETAILS =====
+    if (section === 'user_details') {
+      const userId = url.searchParams.get('userId');
+      if (!userId) return json({ ok: false, message: 'Thiếu userId.' }, 400);
+
+      const user = await env.DB.prepare(
+        'SELECT id, name, email, phone, role, created_at, cart_items FROM users WHERE id = ?'
+      ).bind(userId).first();
+
+      if (!user) return json({ ok: false, message: 'Không tìm thấy user.' }, 404);
+
+      const { results: orders } = await env.DB.prepare(
+        'SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC'
+      ).bind(userId).all();
+
+      const parsedOrders = orders.map(o => ({ ...o, items: JSON.parse(o.items) }));
+      const parsedCart = user.cart_items ? JSON.parse(user.cart_items) : [];
+
+      return json({ ok: true, user, orders: parsedOrders, cart: parsedCart });
+    }
+
     // ===== ORDERS =====
     if (section === 'orders') {
       const { results } = await env.DB.prepare(
