@@ -10,7 +10,7 @@ compatibility_date = "2024-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "dana-db"
-database_id = ""  # Bro điền ID sau khi tạo D1 trên Dashboard
+database_id = "00000000-0000-0000-0000-000000000000"  # Thay bằng ID thật trên Dashboard sau!
 
 # R2 Storage Binding
 [[r2_buckets]]
