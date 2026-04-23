@@ -11,7 +11,7 @@ pages_build_output_dir = "."
 [[d1_databases]]
 binding = "DB"
 database_name = "dana-db"
-database_id = "00000000-0000-0000-0000-000000000000"  # Thay bằng ID thật trên Dashboard sau!
+database_id = "fff7025c-2deb-4b5b-af7d-0b0a4295a706"
 
 # R2 Storage Binding
 [[r2_buckets]]
