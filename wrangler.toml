@@ -1,11 +1,14 @@
 # ===================================================
-# Cloudflare Pages Configuration
+# Cloudflare Worker Configuration
 # hnguyenworks.id.vn - Sữa Hạt Dana
 # ===================================================
 
 name = "com-334"
-compatibility_date = "2024-01-01"
-pages_build_output_dir = "."
+main = "src/worker.js"
+compatibility_date = "2024-09-23"
+
+[assets]
+directory = "."
 
 # D1 Database Binding
 [[d1_databases]]
