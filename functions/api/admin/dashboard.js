@@ -184,6 +184,31 @@ export async function onRequestPost(context) {
       return json({ ok: true });
     }
 
+    // Delete user account (cascade: sessions → orders → user)
+    if (action === 'deleteUser') {
+      const { userId } = body;
+      if (!userId) return json({ ok: false, message: 'Thiếu userId.' }, 400);
+
+      // Prevent deleting admin accounts
+      const targetUser = await env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(userId).first();
+      if (!targetUser) return json({ ok: false, message: 'Không tìm thấy user.' }, 404);
+      if (targetUser.role === 'admin') return json({ ok: false, message: 'Không thể xóa tài khoản admin.' }, 403);
+
+      // Cascade delete
+      await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(userId).run();
+      await env.DB.prepare('DELETE FROM orders WHERE user_id = ?').bind(userId).run();
+      await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
+      return json({ ok: true, message: 'Đã xóa tài khoản và dữ liệu liên quan.' });
+    }
+
+    // Delete order
+    if (action === 'deleteOrder') {
+      const { orderId } = body;
+      if (!orderId) return json({ ok: false, message: 'Thiếu orderId.' }, 400);
+      await env.DB.prepare('DELETE FROM orders WHERE id = ?').bind(orderId).run();
+      return json({ ok: true, message: 'Đã xóa đơn hàng.' });
+    }
+
     return json({ ok: false, message: 'Action không hợp lệ.' }, 400);
 
   } catch (err) {

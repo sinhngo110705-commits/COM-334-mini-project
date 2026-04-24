@@ -290,8 +290,8 @@
       <div class="admin-panel">
         <div class="admin-panel-header"><h3>Tất cả đơn hàng</h3></div>
         <table class="admin-table">
-          <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>SĐT</th><th>Sản phẩm</th><th>Tổng</th><th>Trạng thái</th><th>Ngày</th></tr></thead>
-          <tbody id="orders-body"><tr><td colspan="7" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
+          <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>SĐT</th><th>Sản phẩm</th><th>Tổng</th><th>Trạng thái</th><th>Ngày</th><th>Thao tác</th></tr></thead>
+          <tbody id="orders-body"><tr><td colspan="8" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -519,7 +519,11 @@ function renderUsers(users) {
       <td>${u.phone || '—'}</td>
       <td><span class="role-${u.role}">${u.role === 'admin' ? '🔑 Admin' : 'Khách hàng'}</span></td>
       <td>${formatDate(u.created_at)}</td>
-      <td><button onclick="loadUserDetails('${u.id}')" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:none;padding:4px 12px;border-radius:6px;font-size:0.75rem;font-weight:600">Xem chi tiết</button></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="loadUserDetails('${u.id}')" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:none;padding:4px 12px;border-radius:6px;font-size:0.75rem;font-weight:600">Xem chi tiết</button>
+        ${u.role !== 'admin' ? `<button onclick="deleteUser('${u.id}','${u.name.replace(/'/g, "\\'")}')"
+          style="background:rgba(248,113,113,0.15);color:#f87171;border:none;padding:4px 12px;border-radius:6px;font-size:0.75rem;font-weight:600">Xóa</button>` : ''}
+      </td>
     </tr>
   `).join('');
 }
@@ -606,6 +610,7 @@ function renderOrders(orders) {
         </select>
       </td>
       <td>${formatDate(o.created_at)}</td>
+      <td><button onclick="deleteOrder('${o.id}')" style="background:rgba(248,113,113,0.15);color:#f87171;border:none;padding:4px 12px;border-radius:6px;font-size:0.75rem;font-weight:600">Xóa</button></td>
     </tr>`;
   }).join('');
 }
@@ -665,6 +670,40 @@ async function markRead(contactId) {
     body: JSON.stringify({ action: 'markContactRead', contactId })
   });
   loadSection('contacts');
+}
+
+async function deleteUser(userId, userName) {
+  if (!confirm(`Bạn có chắc muốn xóa tài khoản "${userName}"?\n\nThao tác này sẽ xóa vĩnh viễn tài khoản, tất cả đơn hàng và phiên đăng nhập của người dùng.`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/admin/dashboard?token=${adminToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'deleteUser', userId })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      loadSection('users');
+    } else {
+      alert(data.message || 'Không thể xóa tài khoản.');
+    }
+  } catch (err) { alert('Lỗi kết nối.'); }
+}
+
+async function deleteOrder(orderId) {
+  if (!confirm(`Bạn có chắc muốn xóa đơn hàng "${orderId}"?\n\nThao tác này không thể hoàn tác.`)) return;
+  try {
+    const res = await fetch(`${API_BASE}/admin/dashboard?token=${adminToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'deleteOrder', orderId })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      loadSection('orders');
+    } else {
+      alert(data.message || 'Không thể xóa đơn hàng.');
+    }
+  } catch (err) { alert('Lỗi kết nối.'); }
 }
 </script>
 </body>

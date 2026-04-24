@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Giỏ Hàng – Sữa Hạt Dana</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>" />
+  <link rel="icon" type="image/jpeg" href="assets/images/logo.jpeg" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="stylesheet" href="assets/css/animations.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -11,7 +11,7 @@
 </head>
 <body>
 <div id="cursor"></div><div id="cursor-trail"></div>
-<header class="navbar scrolled"><div class="nav-inner"><a href="index.html" class="nav-logo"><div class="logo-icon">D</div><span>Dana</span></a><nav class="nav-links"><a href="index.html">Trang chủ</a><a href="products.html">Sản phẩm</a><a href="blog.html">Blog</a><a href="about.html">Giới thiệu</a></nav><div class="nav-actions"><a href="cart.html" class="nav-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="cart-badge">0</span></a><a href="account.html" class="nav-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a></div></div></header>
+<header class="navbar scrolled"><div class="nav-inner"><a href="index.html" class="nav-logo"><img src="assets/images/logo.jpeg" alt="Dana Logo" class="logo-icon" style="width:42px;height:42px;border-radius:12px;object-fit:cover" /><span>Dana</span></a><nav class="nav-links"><a href="index.html">Trang chủ</a><a href="products.html">Sản phẩm</a><a href="blog.html">Blog</a><a href="about.html">Giới thiệu</a></nav><div class="nav-actions"><a href="cart.html" class="nav-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="cart-badge">0</span></a><a href="account.html" class="nav-icon-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a></div></div></header>
 
 <section class="cart-page" style="min-height:80vh;padding-bottom:80px">
   <div class="container" style="padding-top:40px">
@@ -60,6 +60,29 @@
   </div>
 </section>
 
+<!-- Checkout Modal -->
+<div id="checkout-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;overflow-y:auto;backdrop-filter:blur(6px)">
+  <div style="max-width:520px;margin:60px auto;padding:40px;background:var(--white);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);position:relative">
+    <button onclick="closeCheckoutModal()" style="position:absolute;top:16px;right:16px;background:var(--cream);border:none;width:36px;height:36px;border-radius:50%;font-size:1.1rem;cursor:pointer;color:var(--gray)">✕</button>
+    <h3 style="margin-bottom:8px;font-size:1.4rem">🛒 Thông Tin Đặt Hàng</h3>
+    <p style="margin-bottom:24px;color:var(--gray);font-size:0.9rem">Vui lòng nhập thông tin giao hàng để hoàn tất đơn hàng.</p>
+    <form id="checkout-form">
+      <div class="form-group"><label for="co-name">Họ và tên *</label><input class="form-control" type="text" id="co-name" placeholder="Nguyễn Văn A" required /></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="form-group"><label for="co-phone">Số điện thoại *</label><input class="form-control" type="tel" id="co-phone" placeholder="0395 xxx xxx" required /></div>
+        <div class="form-group"><label for="co-email">Email</label><input class="form-control" type="email" id="co-email" placeholder="email@example.com" /></div>
+      </div>
+      <div class="form-group"><label for="co-address">Địa chỉ giao hàng *</label><textarea class="form-control" id="co-address" rows="2" placeholder="Số nhà, tên đường, phường, quận, thành phố..." required style="resize:vertical"></textarea></div>
+      <div style="background:var(--cream);border-radius:12px;padding:16px;margin:16px 0">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span>Tạm tính</span><span id="co-subtotal">0đ</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span>Phí vận chuyển</span><span id="co-shipping" style="color:var(--sage);font-weight:600">30.000đ</span></div>
+        <div style="display:flex;justify-content:space-between;font-weight:700;font-size:1.1rem;padding-top:8px;border-top:1px solid var(--gray-light)"><span>Tổng cộng</span><span id="co-total" style="color:var(--sage-dark)">0đ</span></div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:16px;font-size:1rem">✅ Xác nhận đặt hàng</button>
+    </form>
+  </div>
+</div>
+
 <footer class="footer" style="padding:40px 0"><div class="container"><div class="footer-bottom"><p>© 2026 Sữa Hạt Dana</p><p class="powered">Thương hiệu Việt Nam 🇻🇳</p></div></div></footer>
 
 <div class="toast-container"></div>
@@ -72,17 +95,47 @@ function applyCoupon() {
   if (code === 'DANA10') window.showToast('Áp dụng mã DANA10 thành công! Giảm 10%','🎉');
   else window.showToast('Mã giảm giá không hợp lệ','❌');
 }
-async function checkout() {
+
+function checkout() {
   const cart = Cart.getCart();
   if (cart.length === 0) { window.showToast('Giỏ hàng trống!','❌'); return; }
 
-  // Prompt for customer info
-  const name = prompt('Họ và tên người nhận:');
-  if (!name) return;
-  const phone = prompt('Số điện thoại:');
-  if (!phone) return;
-  const address = prompt('Địa chỉ giao hàng:');
+  // Auto-fill from account if logged in
+  const user = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
+  if (user) {
+    document.getElementById('co-name').value = user.name || '';
+    document.getElementById('co-phone').value = user.phone || '';
+    document.getElementById('co-email').value = user.email || '';
+  }
 
+  // Fill summary
+  const subtotal = Cart.getTotal();
+  const shipping = subtotal >= 500000 ? 0 : 30000;
+  const total = subtotal + shipping;
+  document.getElementById('co-subtotal').textContent = subtotal.toLocaleString('vi-VN') + 'đ';
+  document.getElementById('co-shipping').textContent = shipping === 0 ? 'Miễn phí' : shipping.toLocaleString('vi-VN') + 'đ';
+  document.getElementById('co-total').textContent = total.toLocaleString('vi-VN') + 'đ';
+
+  document.getElementById('checkout-modal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCheckoutModal() {
+  document.getElementById('checkout-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.getElementById('checkout-modal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeCheckoutModal();
+});
+
+document.getElementById('checkout-form')?.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = this.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = 'Đang xử lý...';
+
+  const cart = Cart.getCart();
   const subtotal = Cart.getTotal();
   const shipping = subtotal >= 500000 ? 0 : 30000;
   const total = subtotal + shipping;
@@ -93,10 +146,10 @@ async function checkout() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        customerName: name,
-        customerPhone: phone,
-        customerEmail: '',
-        customerAddress: address || '',
+        customerName: document.getElementById('co-name').value.trim(),
+        customerPhone: document.getElementById('co-phone').value.trim(),
+        customerEmail: document.getElementById('co-email').value.trim(),
+        customerAddress: document.getElementById('co-address').value.trim(),
         items: cart,
         subtotal, shipping, total,
         token: token || null
@@ -104,6 +157,7 @@ async function checkout() {
     });
     const data = await res.json();
     if (data.ok) {
+      closeCheckoutModal();
       window.showToast(`Đặt hàng thành công! Mã đơn: ${data.orderId} 🎉`, '✅', 6000);
       Cart.clearCart();
       renderCartPage();
@@ -113,7 +167,9 @@ async function checkout() {
   } catch (err) {
     window.showToast('Lỗi kết nối server. Vui lòng thử lại.', '❌');
   }
-}
+  btn.disabled = false;
+  btn.textContent = '✅ Xác nhận đặt hàng';
+});
 </script>
 </body>
 </html>
