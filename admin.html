@@ -215,6 +215,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Sản phẩm
       </a>
+      <a href="#" data-section="blogs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Quản lý Blog
+      </a>
     </nav>
   </aside>
 
@@ -250,6 +254,7 @@
     <div class="section-tab" id="sec-users">
       <div class="admin-panel">
         <div class="admin-panel-header"><h3>Danh sách tài khoản</h3></div>
+        <div style="padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.06)"><input type="text" id="filter-users" class="admin-input" placeholder="Tìm kiếm tên, email, SĐT..." onkeyup="filterTable('users-body', this.value)" style="max-width:300px;padding:10px 14px"/></div>
         <table class="admin-table">
           <thead><tr><th>Tên</th><th>Email</th><th>SĐT</th><th>Vai trò</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead>
           <tbody id="users-body"><tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
@@ -311,6 +316,7 @@
     <div class="section-tab" id="sec-products">
       <div class="admin-panel">
         <div class="admin-panel-header"><h3>Quản lý sản phẩm</h3></div>
+        <div style="padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.06)"><input type="text" id="filter-products" class="admin-input" placeholder="Tìm kiếm sản phẩm, danh mục..." onkeyup="filterTable('products-body', this.value)" style="max-width:300px;padding:10px 14px"/></div>
         <table class="admin-table">
           <thead><tr><th>Ảnh</th><th>Tên SP</th><th>Danh mục</th><th>Giá</th><th>Badge</th><th>Trạng thái</th></tr></thead>
           <tbody id="products-body"><tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
@@ -318,7 +324,66 @@
       </div>
     </div>
 
+    <!-- BLOGS -->
+    <div class="section-tab" id="sec-blogs">
+      <div style="margin-bottom:20px;text-align:right">
+        <button class="admin-btn" style="width:auto;margin:0;padding:10px 20px" onclick="openBlogModal()">+ Thêm Blog</button>
+      </div>
+      <div class="admin-panel">
+        <div class="admin-panel-header"><h3>Danh sách Blog</h3></div>
+        <div style="padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.06)"><input type="text" id="filter-blogs" class="admin-input" placeholder="Tìm kiếm tiêu đề, danh mục..." onkeyup="filterTable('blogs-body', this.value)" style="max-width:300px;padding:10px 14px"/></div>
+        <table class="admin-table">
+          <thead><tr><th>Ảnh bìa</th><th>Tiêu đề</th><th>Danh mục</th><th>Trạng thái</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead>
+          <tbody id="blogs-body"><tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">Đang tải...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
+</div>
+
+<!-- Add/Edit Blog Modal -->
+<div id="blog-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#1e2130;padding:32px;border-radius:16px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;border:1px solid rgba(107,143,113,0.2)">
+    <h3 id="blog-modal-title" style="color:#fff;margin-bottom:20px;font-size:1.4rem">Thêm Blog Mới</h3>
+    <input type="hidden" id="blog-id" />
+    <div class="admin-form-group">
+      <label>Tiêu đề bài viết</label>
+      <input type="text" id="blog-title" class="admin-input" required />
+    </div>
+    <div class="admin-form-group">
+      <label>Danh mục</label>
+      <select id="blog-category" class="admin-input">
+        <option value="Dinh Dưỡng">Dinh Dưỡng</option>
+        <option value="Công Thức">Công Thức</option>
+        <option value="Fitness">Fitness</option>
+        <option value="Gia Đình">Gia Đình</option>
+      </select>
+    </div>
+    <div class="admin-form-group">
+      <label>Ảnh bìa (Tải lên hoặc dán Link URL)</label>
+      <div style="display:flex;gap:12px">
+        <input type="file" id="blog-image-file" class="admin-input" style="flex:1" accept="image/*" />
+        <button type="button" class="admin-btn" style="width:auto;margin:0" onclick="uploadBlogImage()">Tải lên ảnh</button>
+      </div>
+      <input type="text" id="blog-image-url" class="admin-input" placeholder="Hoặc dán URL ảnh vào đây" style="margin-top:8px" />
+    </div>
+    <div class="admin-form-group">
+      <label>Nội dung bài viết (Hỗ trợ HTML)</label>
+      <textarea id="blog-content" class="admin-input" rows="8" placeholder="<p>Đoạn mở đầu...</p><h3>Tiêu đề 1</h3>..."></textarea>
+    </div>
+    <div class="admin-form-group">
+      <label>Trạng thái hiển thị</label>
+      <select id="blog-active" class="admin-input">
+        <option value="1">Hiển thị (Active)</option>
+        <option value="0">Tạm ẩn</option>
+      </select>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:32px">
+      <button type="button" class="admin-logout-btn" onclick="document.getElementById('blog-modal').style.display='none'">Hủy</button>
+      <button type="button" class="admin-btn" style="width:auto;margin:0" onclick="saveBlog()">Lưu bài viết</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -329,6 +394,7 @@
 
 const API_BASE = '/api';
 let adminToken = localStorage.getItem('dana_admin_token');
+let adminData = null;
 
 // =================== LOGIN ===================
 document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
@@ -386,7 +452,7 @@ async function checkSession() {
     });
     const data = await res.json();
 
-    if (data.ok && data.user.role === 'admin') {
+    if (data.ok && (data.user.role === 'admin' || data.user.role === 'manager')) {
       showDashboard(data.user);
     } else {
       adminToken = null;
@@ -400,6 +466,7 @@ checkSession();
 
 // =================== SHOW DASHBOARD ===================
 function showDashboard(user) {
+  adminData = user;
   document.getElementById('admin-login').style.display = 'none';
   document.getElementById('admin-dashboard').style.display = 'block';
   document.getElementById('admin-name-display').textContent = user.name;
@@ -435,7 +502,7 @@ document.querySelectorAll('.admin-nav a').forEach(link => {
 
 // =================== LOAD SECTION DATA ===================
 async function loadSection(section) {
-  const titles = { overview: 'Tổng quan', users: 'Khách hàng', orders: 'Đơn hàng', contacts: 'Tin nhắn liên hệ', products: 'Quản lý sản phẩm' };
+  const titles = { overview: 'Tổng quan', users: 'Khách hàng', orders: 'Đơn hàng', contacts: 'Tin nhắn liên hệ', products: 'Quản lý sản phẩm', blogs: 'Quản lý Blog' };
   document.getElementById('page-title').textContent = titles[section] || section;
 
   document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
@@ -455,6 +522,7 @@ async function loadSection(section) {
     if (section === 'orders') renderOrders(data.orders);
     if (section === 'contacts') renderContacts(data.contacts);
     if (section === 'products') renderProducts(data.products);
+    if (section === 'blogs') renderBlogs(data.blogs);
   } catch (err) {
     console.error('Load error:', err);
   }
@@ -512,20 +580,36 @@ function renderUsers(users) {
     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">Chưa có khách hàng</td></tr>';
     return;
   }
-  tbody.innerHTML = users.map(u => `
+  tbody.innerHTML = users.map(u => {
+    const isAdminUser = u.role === 'admin';
+    const userRoleStr = isAdminUser ? '🔑 Admin' : (u.role === 'manager' ? '🛠️ Manager' : 'Khách hàng');
+    
+    // Dropdown for changing roles
+    const selectHtml = (adminData && adminData.role === 'admin' && adminData.user_id !== u.id && u.role !== 'admin') ? `
+      <select onchange="changeUserRole('${u.id}', this.value, '${u.name}')" style="background:transparent;color:#cbd5e1;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 8px;font-size:0.75rem;margin-left:8px">
+        <option value="user" ${u.role==='user'?'selected':''}>Khách hàng</option>
+        <option value="manager" ${u.role==='manager'?'selected':''}>Manager</option>
+        <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+      </select>
+    ` : '';
+
+    return `
     <tr>
       <td style="font-weight:600">${u.name}</td>
       <td>${u.email}</td>
       <td>${u.phone || '—'}</td>
-      <td><span class="role-${u.role}">${u.role === 'admin' ? '🔑 Admin' : 'Khách hàng'}</span></td>
+      <td>
+        <span class="role-${u.role}">${userRoleStr}</span>
+        ${selectHtml}
+      </td>
       <td>${formatDate(u.created_at)}</td>
       <td style="display:flex;gap:6px;flex-wrap:wrap">
         <button onclick="loadUserDetails('${u.id}')" style="background:rgba(56,189,248,0.15);color:#38bdf8;border:none;padding:4px 12px;border-radius:6px;font-size:0.75rem;font-weight:600">Xem chi tiết</button>
-        ${u.role !== 'admin' ? `<button onclick="deleteUser('${u.id}','${u.name.replace(/'/g, "\\'")}')"
+        ${!isAdminUser ? `<button onclick="deleteUser('${u.id}','${u.name.replace(/'/g, "\\'")}')"
           style="background:rgba(248,113,113,0.15);color:#f87171;border:none;padding:4px 12px;border-radius:6px;font-size:0.75rem;font-weight:600">Xóa</button>` : ''}
       </td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
 async function loadUserDetails(userId) {
@@ -704,6 +788,150 @@ async function deleteOrder(orderId) {
       alert(data.message || 'Không thể xóa đơn hàng.');
     }
   } catch (err) { alert('Lỗi kết nối.'); }
+}
+
+// =================== FILTERING ===================
+function filterTable(tbodyId, searchTerm) {
+  const term = searchTerm.toLowerCase();
+  const rows = document.getElementById(tbodyId).querySelectorAll('tr');
+  rows.forEach(row => {
+    if(row.children.length === 1 && row.textContent.includes('Chưa có')) return; // empty state
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(term) ? '' : 'none';
+  });
+}
+
+// =================== ROLE MANAGEMENT ===================
+async function changeUserRole(userId, newRole, userName) {
+  if (!confirm(`Bạn có chắc muốn đổi vai trò của "${userName}" thành "${newRole}"?`)) {
+    loadSection('users'); // Reset select
+    return;
+  }
+  try {
+    const res = await fetch(`${API_BASE}/admin/dashboard?token=${adminToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'changeUserRole', userId, newRole })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      loadSection('users');
+    } else {
+      alert(data.message || 'Không thể thay đổi vai trò.');
+      loadSection('users');
+    }
+  } catch (err) { alert('Lỗi kết nối.'); loadSection('users'); }
+}
+
+// =================== BLOG MANAGEMENT ===================
+function renderBlogs(blogs) {
+  const tbody = document.getElementById('blogs-body');
+  if (!blogs || blogs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#64748b">Chưa có bài viết</td></tr>';
+    return;
+  }
+  tbody.innerHTML = blogs.map(b => `
+    <tr>
+      <td><img src="${b.image_url || 'assets/images/logo.jpeg'}" alt="" style="width:50px;height:50px;border-radius:8px;object-fit:cover" /></td>
+      <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${b.title}">${b.title}</td>
+      <td>${b.category || '—'}</td>
+      <td>${b.is_active ? '<span style="color:#6B8F71">✓ Active</span>' : '<span style="color:#f87171">✗ Ẩn</span>'}</td>
+      <td>${formatDate(b.created_at)}</td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick='editBlog(${JSON.stringify(b).replace(/'/g, "&#39;")})' style="background:rgba(56,189,248,0.15);color:#38bdf8;border:none;padding:4px 12px;border-radius:6px;font-size:0.75rem;font-weight:600">Sửa</button>
+        <button onclick="deleteBlog('${b.id}')" style="background:rgba(248,113,113,0.15);color:#f87171;border:none;padding:4px 12px;border-radius:6px;font-size:0.75rem;font-weight:600">Xóa</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openBlogModal() {
+  document.getElementById('blog-modal-title').textContent = 'Thêm Blog Mới';
+  document.getElementById('blog-id').value = '';
+  document.getElementById('blog-title').value = '';
+  document.getElementById('blog-category').value = 'Dinh Dưỡng';
+  document.getElementById('blog-content').value = '';
+  document.getElementById('blog-image-url').value = '';
+  document.getElementById('blog-image-file').value = '';
+  document.getElementById('blog-active').value = '1';
+  document.getElementById('blog-modal').style.display = 'flex';
+}
+
+function editBlog(b) {
+  document.getElementById('blog-modal-title').textContent = 'Chỉnh Sửa Blog';
+  document.getElementById('blog-id').value = b.id;
+  document.getElementById('blog-title').value = b.title;
+  document.getElementById('blog-category').value = b.category || 'Dinh Dưỡng';
+  document.getElementById('blog-content').value = b.content || '';
+  document.getElementById('blog-image-url').value = b.image_url || '';
+  document.getElementById('blog-image-file').value = '';
+  document.getElementById('blog-active').value = b.is_active ? '1' : '0';
+  document.getElementById('blog-modal').style.display = 'flex';
+}
+
+async function uploadBlogImage() {
+  const fileInput = document.getElementById('blog-image-file');
+  if (!fileInput.files || fileInput.files.length === 0) {
+    alert('Vui lòng chọn ảnh để tải lên.');
+    return;
+  }
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  formData.append('token', adminToken);
+  
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('blog-image-url').value = data.imageUrl;
+      alert('Tải ảnh thành công!');
+    } else {
+      alert('Lỗi: ' + data.message);
+    }
+  } catch(err) { alert('Lỗi kết nối.'); }
+}
+
+async function saveBlog() {
+  const blog = {
+    id: document.getElementById('blog-id').value,
+    title: document.getElementById('blog-title').value.trim(),
+    category: document.getElementById('blog-category').value,
+    image_url: document.getElementById('blog-image-url').value.trim(),
+    content: document.getElementById('blog-content').value.trim(),
+    is_active: parseInt(document.getElementById('blog-active').value, 10)
+  };
+  
+  if (!blog.title || !blog.content) {
+    alert('Vui lòng nhập tiêu đề và nội dung.'); return;
+  }
+  
+  try {
+    const res = await fetch(`${API_BASE}/admin/dashboard?token=${adminToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'saveBlog', blog })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('blog-modal').style.display = 'none';
+      loadSection('blogs');
+    } else {
+      alert(data.message || 'Lỗi khi lưu bài viết.');
+    }
+  } catch(err) { alert('Lỗi kết nối.'); }
+}
+
+async function deleteBlog(blogId) {
+  if (!confirm('Bạn có chắc muốn xóa bài viết này (sẽ bị đưa vào trạng thái Ẩn)?')) return;
+  try {
+    const res = await fetch(`${API_BASE}/admin/dashboard?token=${adminToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'deleteBlog', blogId })
+    });
+    if ((await res.json()).ok) loadSection('blogs');
+    else alert('Lỗi khi xóa bài viết.');
+  } catch(err) { alert('Lỗi kết nối.'); }
 }
 </script>
 </body>

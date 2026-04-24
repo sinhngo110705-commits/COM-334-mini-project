@@ -28,7 +28,7 @@ export async function onRequestPost(context) {
         'SELECT s.user_id, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND s.expires_at > datetime("now")'
       ).bind(token).first();
 
-      if (!session || session.role !== 'admin') {
+      if (!session || (session.role !== 'admin' && session.role !== 'manager')) {
         return json({ ok: false, message: 'Không có quyền upload.' }, 403);
       }
     } else {

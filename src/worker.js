@@ -11,6 +11,7 @@ import { onRequestPost as ordersPost, onRequestGet as ordersGet, onRequestPut as
 import { onRequestPost as contactPost } from '../functions/api/contact.js';
 import { onRequestPost as uploadPost } from '../functions/api/upload.js';
 import { onRequestGet as dashboardGet, onRequestPost as dashboardPost } from '../functions/api/admin/dashboard.js';
+import { onRequestGet as blogsGet } from '../functions/api/blogs.js';
 
 // CORS headers
 const CORS = {
@@ -78,6 +79,10 @@ export default {
         case '/api/admin/dashboard':
           if (method === 'GET') response = await dashboardGet(context);
           else if (method === 'POST') response = await dashboardPost(context);
+          break;
+
+        case '/api/blogs':
+          if (method === 'GET') response = await blogsGet(context);
           break;
       }
     } catch (err) {

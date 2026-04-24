@@ -21,7 +21,7 @@ async function verifyAdmin(env, request) {
     'SELECT s.user_id, u.role, u.name, u.email FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND s.expires_at > datetime("now")'
   ).bind(token).first();
 
-  if (!session || session.role !== 'admin') return null;
+  if (!session || (session.role !== 'admin' && session.role !== 'manager')) return null;
   return session;
 }
 
@@ -123,6 +123,14 @@ export async function onRequestGet(context) {
       return json({ ok: true, products });
     }
 
+    // ===== BLOGS =====
+    if (section === 'blogs') {
+      const { results } = await env.DB.prepare(
+        'SELECT * FROM blogs ORDER BY created_at DESC'
+      ).all();
+      return json({ ok: true, blogs: results });
+    }
+
     return json({ ok: false, message: 'Section không hợp lệ.' }, 400);
 
   } catch (err) {
@@ -182,6 +190,46 @@ export async function onRequestPost(context) {
       const { productId } = body;
       await env.DB.prepare('UPDATE products SET is_active = 0 WHERE id = ?').bind(productId).run();
       return json({ ok: true });
+    }
+
+    // Add/Update Blog
+    if (action === 'saveBlog') {
+      const { blog } = body;
+      const { id, title, category, content, image_url, is_active } = blog;
+
+      if (id) {
+        await env.DB.prepare(
+          `UPDATE blogs SET title=?, category=?, content=?, image_url=?, is_active=? WHERE id=?`
+        ).bind(title, category, content, image_url || null, is_active ?? 1, id).run();
+      } else {
+        const newId = 'blg_' + Date.now();
+        await env.DB.prepare(
+          `INSERT INTO blogs (id, title, category, content, image_url, is_active) VALUES (?,?,?,?,?,?)`
+        ).bind(newId, title, category, content, image_url || null, is_active ?? 1).run();
+      }
+      return json({ ok: true });
+    }
+
+    // Delete Blog
+    if (action === 'deleteBlog') {
+      const { blogId } = body;
+      await env.DB.prepare('UPDATE blogs SET is_active = 0 WHERE id = ?').bind(blogId).run();
+      return json({ ok: true });
+    }
+
+    // Change user role (Admin only)
+    if (action === 'changeUserRole') {
+      if (admin.role !== 'admin') {
+        return json({ ok: false, message: 'Chỉ Admin mới có quyền đổi vai trò.' }, 403);
+      }
+      const { userId, newRole } = body;
+      if (!['user', 'manager', 'admin'].includes(newRole)) return json({ ok: false, message: 'Vai trò không hợp lệ.' }, 400);
+      
+      // Prevent demoting the last admin if needed, or prevent changing own role?
+      if (admin.user_id === userId) return json({ ok: false, message: 'Bạn không thể tự đổi vai trò của chính mình.' }, 400);
+
+      await env.DB.prepare('UPDATE users SET role = ? WHERE id = ?').bind(newRole, userId).run();
+      return json({ ok: true, message: 'Cập nhật vai trò thành công.' });
     }
 
     // Delete user account (cascade: sessions → orders → user)
