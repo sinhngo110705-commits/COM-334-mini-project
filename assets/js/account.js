@@ -212,7 +212,81 @@ document.addEventListener('DOMContentLoaded', () => {
   if (isProtectedPage && !Auth.isLoggedIn()) {
     window.location.href = 'account.html?redirect=' + encodeURIComponent(window.location.pathname);
   }
+
+  // ========== LOAD ORDERS ==========
+  if (user && document.getElementById('ptab-tab-orders')) {
+    loadUserOrders();
+  }
 });
+
+async function loadUserOrders() {
+  const container = document.getElementById('ptab-tab-orders');
+  try {
+    const res = await fetch(`/api/orders?token=${Auth.getToken()}`);
+    const data = await res.json();
+    if (data.ok && data.orders && data.orders.length > 0) {
+      let html = `<h3 style="margin-bottom:28px;font-size:1.5rem">Đơn hàng của tôi</h3><div style="display:grid;gap:16px">`;
+      data.orders.forEach(o => {
+        const d = new Date(o.created_at);
+        const dateStr = d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+        
+        let statusBadge = '';
+        let canCancel = false;
+        switch(o.status) {
+          case 'pending': statusBadge = '<span style="background:var(--cream);color:var(--sage-dark);padding:4px 10px;border-radius:12px;font-size:0.8rem;font-weight:600">Chờ xử lý</span>'; canCancel = true; break;
+          case 'confirmed': statusBadge = '<span style="background:rgba(56,189,248,0.15);color:#0284c7;padding:4px 10px;border-radius:12px;font-size:0.8rem;font-weight:600">Đã xác nhận</span>'; break;
+          case 'delivered': statusBadge = '<span style="background:rgba(34,197,94,0.15);color:#16a34a;padding:4px 10px;border-radius:12px;font-size:0.8rem;font-weight:600">Đã giao</span>'; break;
+          case 'cancelled': statusBadge = '<span style="background:rgba(248,113,113,0.15);color:#dc2626;padding:4px 10px;border-radius:12px;font-size:0.8rem;font-weight:600">Đã hủy</span>'; break;
+        }
+
+        const itemsStr = o.items.map(i => `${i.name} x${i.qty}`).join(', ');
+
+        html += `
+          <div style="border:1px solid var(--gray-light);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--cream);padding-bottom:12px">
+              <div>
+                <strong style="color:var(--sage-dark);font-size:1.1rem">#${o.id}</strong>
+                <div style="color:var(--gray);font-size:0.85rem;margin-top:4px">${dateStr}</div>
+              </div>
+              <div style="text-align:right">
+                ${statusBadge}
+                <div style="margin-top:8px;font-weight:700;font-size:1.1rem">${o.total.toLocaleString('vi-VN')}đ</div>
+              </div>
+            </div>
+            <div style="color:var(--gray);font-size:0.9rem">
+              <strong>Sản phẩm:</strong> ${itemsStr}
+            </div>
+            ${canCancel ? `<div style="text-align:right;margin-top:8px"><button onclick="cancelOrder('${o.id}')" style="background:rgba(248,113,113,0.1);color:#dc2626;border:1px solid rgba(248,113,113,0.2);padding:6px 16px;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s">🚨 Hủy đơn hàng</button></div>` : ''}
+          </div>
+        `;
+      });
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+window.cancelOrder = async function(orderId) {
+  if (!confirm(`Bạn có chắc chắn muốn hủy đơn hàng #${orderId} không?`)) return;
+  try {
+    const res = await fetch('/api/orders', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: Auth.getToken(), orderId, action: 'cancel' })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      window.showToast?.('Đã hủy đơn hàng thành công', '✅');
+      loadUserOrders(); // Reload the list
+    } else {
+      window.showToast?.(data.message || 'Lỗi khi hủy đơn hàng', '❌');
+    }
+  } catch (err) {
+    window.showToast?.('Lỗi kết nối', '❌');
+  }
+};
 
 function showFormError(id, msg) {
   const el = document.getElementById(id);

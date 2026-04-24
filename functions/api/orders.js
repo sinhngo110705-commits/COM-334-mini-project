@@ -83,3 +83,45 @@ export async function onRequestGet(context) {
     return json({ ok: false, message: err.message }, 500);
   }
 }
+
+// PUT /api/orders - Update order status (Cancel for users)
+export async function onRequestPut(context) {
+  const { env, request } = context;
+
+  try {
+    const body = await request.json();
+    const { token, orderId, action } = body;
+
+    if (!token || !orderId || action !== 'cancel') {
+      return json({ ok: false, message: 'Dữ liệu không hợp lệ.' }, 400);
+    }
+
+    const session = await env.DB.prepare(
+      'SELECT user_id FROM sessions WHERE token = ? AND expires_at > datetime("now")'
+    ).bind(token).first();
+
+    if (!session) {
+      return json({ ok: false, message: 'Phiên đăng nhập hết hạn.' }, 401);
+    }
+
+    const order = await env.DB.prepare(
+      'SELECT status FROM orders WHERE id = ? AND user_id = ?'
+    ).bind(orderId, session.user_id).first();
+
+    if (!order) {
+      return json({ ok: false, message: 'Không tìm thấy đơn hàng.' }, 404);
+    }
+
+    if (order.status !== 'pending') {
+      return json({ ok: false, message: 'Chỉ có thể hủy đơn hàng đang chờ xử lý.' }, 400);
+    }
+
+    await env.DB.prepare(
+      'UPDATE orders SET status = "cancelled" WHERE id = ? AND user_id = ?'
+    ).bind(orderId, session.user_id).run();
+
+    return json({ ok: true, message: 'Đã hủy đơn hàng thành công.' });
+  } catch (err) {
+    return json({ ok: false, message: err.message }, 500);
+  }
+}
