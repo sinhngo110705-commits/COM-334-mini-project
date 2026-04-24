@@ -7,7 +7,7 @@
 import { onRequestPost as authPost } from '../functions/api/auth.js';
 import { onRequestGet as cartGet, onRequestPost as cartPost } from '../functions/api/cart.js';
 import { onRequestGet as productsGet } from '../functions/api/products.js';
-import { onRequestPost as ordersPost, onRequestGet as ordersGet } from '../functions/api/orders.js';
+import { onRequestPost as ordersPost, onRequestGet as ordersGet, onRequestPut as ordersPut } from '../functions/api/orders.js';
 import { onRequestPost as contactPost } from '../functions/api/contact.js';
 import { onRequestPost as uploadPost } from '../functions/api/upload.js';
 import { onRequestGet as dashboardGet, onRequestPost as dashboardPost } from '../functions/api/admin/dashboard.js';
@@ -64,6 +64,7 @@ export default {
         case '/api/orders':
           if (method === 'GET') response = await ordersGet(context);
           else if (method === 'POST') response = await ordersPost(context);
+          else if (method === 'PUT') response = await ordersPut(context);
           break;
 
         case '/api/contact':
