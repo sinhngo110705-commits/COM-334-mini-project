@@ -104,6 +104,18 @@
 <script src="assets/js/cart.js"></script>
 <script src="assets/js/account.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const user = typeof Auth !== 'undefined' ? Auth.getCurrentUser() : null;
+  if (user) {
+    const elName = document.getElementById('ct-name');
+    const elEmail = document.getElementById('ct-email');
+    const elPhone = document.getElementById('ct-phone');
+    if (elName && user.name) elName.value = user.name;
+    if (elEmail && user.email) elEmail.value = user.email;
+    if (elPhone && user.phone) elPhone.value = user.phone;
+  }
+});
+
 document.getElementById('contact-form')?.addEventListener('submit', async function(e) {
   e.preventDefault();
   const btn = this.querySelector('button[type="submit"]');
