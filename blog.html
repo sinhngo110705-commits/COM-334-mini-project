@@ -36,46 +36,54 @@
       <button class="filter-tab" data-filter="gia-dinh">👨‍👩‍👧 Gia Đình</button>
     </div>
 
-    <!-- Featured Post -->
+    <!-- Featured Post - Blog 1 -->
     <div class="blog-card" style="flex-direction:row;display:flex;margin-bottom:48px;border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-lg)" data-reveal="up" data-category="dinh-duong">
       <div style="flex:1;height:360px;overflow:hidden">
-        <img src="assets/images/blog/blog1.png" alt="Featured" style="width:100%;height:100%;object-fit:cover;transition:transform 0.6s ease" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+        <img src="assets/images/blog/blog1.png" alt="10 Lý Do Nên Chuyển Sang Sữa Hạt" style="width:100%;height:100%;object-fit:cover;transition:transform 0.6s ease" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
       </div>
       <div class="blog-card-body" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px">
         <span class="blog-card-cat" style="position:static;display:inline-block;width:fit-content;margin-bottom:12px">Dinh Dưỡng · Nổi bật</span>
-        <p class="blog-meta">07/04/2026 · 5 phút đọc</p>
-        <h3 style="margin-bottom:16px">10 Lý Do Nên Chuyển Sang Sữa Hạt Mỗi Ngày</h3>
-        <p style="color:var(--gray);line-height:1.8;margin-bottom:24px">Từ việc cải thiện tiêu hóa đến tăng cường miễn dịch và kiểm soát cân nặng, sữa hạt mang lại những lợi ích sức khoẻ bất ngờ mà ít người biết đến...</p>
-        <a href="#" class="read-more">Đọc bài viết <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        <p class="blog-meta">07/04/2026 · 8 phút đọc</p>
+        <h3 style="margin-bottom:16px">10 Lý Do Tại Sao Bạn Nên Chuyển Sang Sữa Hạt Mỗi Ngày</h3>
+        <p style="color:var(--gray);line-height:1.8;margin-bottom:24px">Trong bối cảnh xu hướng "Sống Xanh" và "Ăn Sạch" đang bùng nổ tại Việt Nam, sữa hạt không còn là một lựa chọn thay thế tạm thời mà đang dần trở thành tiêu chuẩn mới cho thực đơn dinh dưỡng hiện đại. Từ việc phù hợp với cơ địa người Việt đến bảo vệ tim mạch và chống lão hóa...</p>
+        <a href="#blog1" class="read-more" onclick="openBlogDetail('blog1')">Đọc bài viết <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
       </div>
     </div>
 
     <!-- Blog Grid -->
     <div class="blog-cards" data-stagger id="blog-grid">
-      <a href="#" class="blog-card" data-category="fitness">
+      <a href="#blog2" class="blog-card" data-category="fitness" onclick="openBlogDetail('blog2');return false;">
         <div class="blog-card-img"><img src="assets/images/blog/blog2.png" alt="Sữa hạt cho gym" /><span class="blog-card-cat">Fitness</span></div>
-        <div class="blog-card-body"><p class="blog-meta">05/04/2026 · 4 phút đọc</p><h4>Sữa Hạt Có Đủ Protein Cho Người Tập Gym Không?</h4><p>Phân tích chi tiết hàm lượng protein trong từng loại sữa hạt và cách tối ưu cho người luyện tập thể dục mỗi ngày.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        <div class="blog-card-body"><p class="blog-meta">05/04/2026 · 7 phút đọc</p><h4>Sữa Hạt Có Đủ Protein Cho Người Tập Gym Không?</h4><p>Phân tích chi tiết hàm lượng protein trong từng loại sữa hạt, "nghịch lý" protein và chiến lược mix thông minh cho người luyện tập.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
       </a>
-      <a href="#" class="blog-card" data-category="gia-dinh">
+      <a href="#blog3" class="blog-card" data-category="gia-dinh" onclick="openBlogDetail('blog3');return false;">
         <div class="blog-card-img"><img src="assets/images/blog/blog3.png" alt="Trẻ em sữa hạt" /><span class="blog-card-cat">Gia Đình</span></div>
-        <div class="blog-card-body"><p class="blog-meta">03/04/2026 · 6 phút đọc</p><h4>Trẻ Em Uống Sữa Hạt: Điều Cha Mẹ Cần Biết</h4><p>Hướng dẫn chọn loại sữa hạt phù hợp theo độ tuổi, lưu ý dinh dưỡng và cách bổ sung hợp lý cho bé.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        <div class="blog-card-body"><p class="blog-meta">03/04/2026 · 6 phút đọc</p><h4>Trẻ Em Uống Sữa Hạt: Điều Cha Mẹ Cần Biết</h4><p>Lợi ích tuyệt vời, thời điểm "Vàng" cho bé uống sữa, lưu ý dinh dưỡng sống còn và chiến lược bổ sung theo độ tuổi.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
       </a>
-      <a href="#" class="blog-card" data-category="cong-thuc">
+      <a href="#blog4" class="blog-card" data-category="cong-thuc" onclick="openBlogDetail('blog4');return false;">
         <div class="blog-card-img"><img src="assets/images/blog/blog1.png" alt="Công thức smoothie" /><span class="blog-card-cat">Công Thức</span></div>
-        <div class="blog-card-body"><p class="blog-meta">01/04/2026 · 3 phút đọc</p><h4>5 Công Thức Smoothie Từ Sữa Hạt Ngon Xuất Sắc</h4><p>Từ smoothie chuối đến matcha xoài — 5 công thức dễ làm, đẹp mắt và cực kỳ dinh dưỡng với sữa hạt Dana.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        <div class="blog-card-body"><p class="blog-meta">01/04/2026 · 5 phút đọc</p><h4>5 Công Thức Smoothie Từ Sữa Hạt Ngon Xuất Sắc</h4><p>Từ smoothie Chuối Bơ Đậu Phộng đến Matcha Xoài — 5 công thức "Golden Ratio" đẹp mắt và cực kỳ dinh dưỡng.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
       </a>
-      <a href="#" class="blog-card" data-category="dinh-duong">
+      <a href="#blog5" class="blog-card" data-category="dinh-duong" onclick="openBlogDetail('blog5');return false;">
         <div class="blog-card-img"><img src="assets/images/blog/blog2.png" alt="Omega-3" /><span class="blog-card-cat">Dinh Dưỡng</span></div>
-        <div class="blog-card-body"><p class="blog-meta">28/03/2026 · 5 phút đọc</p><h4>Omega-3 Trong Sữa Óc Chó: Bí Quyết Cho Não Bộ</h4><p>Tại sao Omega-3 quan trọng và sữa óc chó Dana cung cấp bao nhiêu trong mỗi ly? Câu trả lời khoa học đơn giản nhất.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        <div class="blog-card-body"><p class="blog-meta">28/03/2026 · 6 phút đọc</p><h4>Omega-3 Trong Sữa Óc Chó: Đầu Tư Cho "Tài Sản" Não Bộ</h4><p>Trong kỷ nguyên kinh tế tri thức, sức khỏe trí não đang trở thành "tài sản" cần được bảo vệ. Phân tích vai trò ALA và lợi ích cho mọi lứa tuổi.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
       </a>
-      <a href="#" class="blog-card" data-category="cong-thuc">
+      <a href="#blog6" class="blog-card" data-category="cong-thuc" onclick="openBlogDetail('blog6');return false;">
         <div class="blog-card-img"><img src="assets/images/blog/blog3.png" alt="Latte hạt" /><span class="blog-card-cat">Công Thức</span></div>
-        <div class="blog-card-body"><p class="blog-meta">25/03/2026 · 3 phút đọc</p><h4>Pha Latte Hạnh Nhân Tại Nhà Ngon Như Quán</h4><p>Chỉ cần sữa hạnh nhân Dana, espresso và chút kỹ năng tạo bọt — bạn đã có ly latte premium cực kỳ healthy.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        <div class="blog-card-body"><p class="blog-meta">25/03/2026 · 5 phút đọc</p><h4>Pha Latte Hạnh Nhân Tại Nhà Ngon Như Quán</h4><p>Khi sự tiện lợi gặp gỡ đẳng cấp Premium. Bí quyết kỹ thuật tạo bọt, nhiệt độ vàng và tỷ lệ hoàn hảo với sữa Dana.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
       </a>
-      <a href="#" class="blog-card" data-category="fitness">
+      <a href="#blog7" class="blog-card" data-category="fitness" onclick="openBlogDetail('blog7');return false;">
         <div class="blog-card-img"><img src="assets/images/blog/blog1.png" alt="Giảm cân" /><span class="blog-card-cat">Fitness</span></div>
-        <div class="blog-card-body"><p class="blog-meta">22/03/2026 · 7 phút đọc</p><h4>Sữa Hạt Có Giúp Giảm Cân Không? Sự Thật Khoa Học</h4><p>Phân tích dựa trên nghiên cứu: khi nào sữa hạt hỗ trợ giảm cân và cách tích hợp vào chế độ ăn hợp lý.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
+        <div class="blog-card-body"><p class="blog-meta">22/03/2026 · 7 phút đọc</p><h4>Sữa Hạt Có Giúp Giảm Cân Không? Sự Thật Khoa Học</h4><p>Phân tích dựa trên dữ liệu dinh dưỡng: mật độ calo thấp, chỉ số đường huyết GI và chiến lược tích hợp vào thực đơn giảm cân.</p><span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></div>
       </a>
+    </div>
+
+    <!-- Blog Detail Modal -->
+    <div id="blog-detail-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;overflow-y:auto;backdrop-filter:blur(8px);animation:fadeIn 0.3s ease">
+      <div style="max-width:800px;margin:40px auto;padding:48px;background:var(--white);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);position:relative">
+        <button onclick="closeBlogDetail()" style="position:sticky;top:0;float:right;background:var(--sage);color:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:1.2rem;cursor:pointer;z-index:10">✕</button>
+        <div id="blog-detail-content" style="line-height:1.9;color:var(--dark)"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -98,5 +106,204 @@
 <script src="assets/js/main.js"></script>
 <script src="assets/js/cart.js"></script>
 <script src="assets/js/account.js"></script>
+<script>
+const blogData = {
+  blog1: {
+    title: '10 Lý Do Tại Sao Bạn Nên Chuyển Sang Sữa Hạt Mỗi Ngày',
+    cat: 'Dinh Dưỡng', date: '07/04/2026',
+    content: `<p>Trong bối cảnh xu hướng "Sống Xanh" và "Ăn Sạch" (Clean Eating) đang bùng nổ tại Việt Nam, sữa hạt không còn là một lựa chọn thay thế tạm thời mà đang dần trở thành tiêu chuẩn mới cho thực đơn dinh dưỡng hiện đại. Dưới đây là 10 lý do thuyết phục:</p>
+<ol>
+<li><strong>Phù hợp với cơ địa người Việt:</strong> Tỷ lệ người Việt trưởng thành không dung nạp Lactose (gây đầy hơi, tiêu chảy khi uống sữa động vật) là rất cao. Sữa hạt là giải pháp thay thế hoàn hảo.</li>
+<li><strong>Kiểm soát cân nặng hiệu quả:</strong> Sữa hạt thường ít calo hơn sữa động vật nhưng lại giàu chất xơ, giúp tạo cảm giác no lâu.</li>
+<li><strong>Bảo vệ sức khỏe tim mạch:</strong> Các loại hạt như hạnh nhân, óc chó chứa nhiều Omega-3 và chất béo không bão hòa, giúp giảm Cholesterol xấu.</li>
+<li><strong>Ổn định đường huyết:</strong> Hầu hết sữa hạt có chỉ số đường huyết (GI) thấp, an toàn cho người tiểu đường.</li>
+<li><strong>Chống lão hóa và làm đẹp da:</strong> Hàm lượng Vitamin E và chất chống oxy hóa tự nhiên giúp ngăn ngừa lão hóa từ bên trong.</li>
+<li><strong>Hỗ trợ chức năng não bộ:</strong> Sắt, kẽm và Omega-3 trong hạt tăng cường trí nhớ và khả năng tập trung.</li>
+<li><strong>Nguồn khoáng chất dồi dào:</strong> Magie, Kali và Canxi tự nhiên giúp xương chắc khỏe.</li>
+<li><strong>Đa dạng hương vị:</strong> Từ béo ngậy hạt điều, thơm nồng hạnh nhân đến thanh mát hạt sen.</li>
+<li><strong>Thân thiện với môi trường:</strong> Sản xuất sữa hạt tiêu tốn ít nước và đất đai hơn chăn nuôi bò sữa.</li>
+<li><strong>Dễ dàng kết hợp vào lối sống bận rộn:</strong> Tiện lợi dùng làm bữa sáng nhanh hoặc đồ uống bổ sung năng lượng tại văn phòng.</li>
+</ol>
+<h3>⚠️ Rủi Ro Cần Lưu Ý</h3>
+<ul>
+<li><strong>Thiếu hụt Vitamin B12:</strong> Nên bổ sung các nguồn thực phẩm khác hoặc chọn dòng sữa hạt có tăng cường vi chất.</li>
+<li><strong>Dị ứng thực phẩm:</strong> Hãy kiểm tra phản ứng cơ thể trước khi sử dụng thường xuyên.</li>
+<li><strong>Lượng đường ẩn:</strong> Ưu tiên dòng "Không đường" hoặc "Ít đường".</li>
+<li><strong>Không dùng thay thế hoàn toàn cho trẻ nhỏ:</strong> Sữa hạt không thể thay thế sữa mẹ hoặc sữa công thức.</li>
+</ul>
+<p><em>Việc chuyển sang sữa hạt không chỉ là đuổi theo xu hướng, mà là một khoản đầu tư dài hạn cho sức khỏe. Hãy bắt đầu bằng một ly sữa hạt mỗi sáng.</em></p>`
+  },
+  blog2: {
+    title: 'Sữa Hạt Có Đủ Protein Cho Người Tập Gym Không?',
+    cat: 'Fitness', date: '05/04/2026',
+    content: `<p>Trong làn sóng tiêu dùng bền vững và chế độ ăn thực vật, sữa hạt đang trở thành lựa chọn ưu tiên của nhiều người. Tuy nhiên, đối với cộng đồng tập gym — câu hỏi đặt ra là: Liệu sữa hạt có đủ sức thay thế sữa động vật trong việc cung cấp Protein?</p>
+<h3>1. Các loại sữa giàu protein tốt cho người tập gym</h3>
+<p>Sữa whey protein, sữa đậu nành và sữa hạt đều là những lựa chọn tuyệt vời. Đặc biệt sữa hạt điều và sữa hạt chia ngày càng phổ biến nhờ giàu omega-3 và chất xơ tốt cho tiêu hóa.</p>
+<h3>2. "Nghịch lý" hàm lượng Protein</h3>
+<ul>
+<li><strong>Sữa Hạnh Nhân:</strong> Khoảng 1g protein/ly — tốt cho giảm calo nhưng không đủ cho cơ bắp.</li>
+<li><strong>Sữa Hạt Điều & Yến Mạch:</strong> 2g - 4g protein, đi kèm tinh bột cao hơn.</li>
+<li><strong>Sữa Đậu Nành:</strong> "Ngôi sao" với 7g - 8g protein, gần tương đương sữa bò.</li>
+</ul>
+<h3>3. Thách thức về "Protein hoàn chỉnh"</h3>
+<p>Đa số hạt (trừ đậu nành và hạt chia) thường thiếu hụt axit amin thiết yếu như Lysine. Người tập gym cần chiến lược "mix" thông minh.</p>
+<h3>4. Giải pháp tối ưu</h3>
+<ul>
+<li><strong>Công thức phối trộn:</strong> Kết hợp sữa hạt cùng bột hạt lanh, hạt chia hoặc ngũ cốc.</li>
+<li><strong>Thực phẩm bổ sung:</strong> Pha sữa hạt cùng Vegan Protein Powder để đạt 20g - 25g protein/lần.</li>
+<li><strong>Dòng sữa hạt "High Protein":</strong> Các dòng sữa hạt fortified dành riêng cho vận động viên.</li>
+</ul>
+<p><em>Sữa hạt CÓ THỂ đáp ứng nhu cầu của người tập gym, nhưng với điều kiện bạn phải hiểu rõ bảng thành phần và không dùng nó như nguồn protein duy nhất.</em></p>`
+  },
+  blog3: {
+    title: 'Trẻ Em Uống Sữa Hạt: Điều Cha Mẹ Cần Biết',
+    cat: 'Gia Đình', date: '03/04/2026',
+    content: `<h3>1. Lợi ích tuyệt vời của sữa hạt cho trẻ</h3>
+<ul>
+<li>Thành phần tự nhiên xay nguyên chất, rất lành tính cho mọi lứa tuổi.</li>
+<li>Giàu vitamin A, B, E, D giúp trẻ tăng cường kháng thể.</li>
+<li>Chứa nhiều canxi hỗ trợ phát triển chiều cao.</li>
+<li>Giàu chất xơ hỗ trợ hệ tiêu hóa, ngăn ngừa táo bón.</li>
+<li>Hạnh nhân, óc chó, mắc ca chứa vitamin B12, riboflavin, protein rất tốt cho trí não.</li>
+</ul>
+<h3>2. Những thời điểm "Vàng" nên cho bé uống sữa</h3>
+<ul>
+<li><strong>Buổi sáng:</strong> Bổ sung năng lượng cho bé hoạt động và học tập tốt hơn.</li>
+<li><strong>Buổi chiều 3 - 4 giờ:</strong> Thay thế bánh snack, kẹo, nước ngọt bằng sữa hạt dinh dưỡng.</li>
+<li><strong>Buổi tối trước khi đi ngủ:</strong> Giúp bé ngủ ngon, hấp thụ canxi tốt nhất, hỗ trợ phát triển chiều cao.</li>
+</ul>
+<h3>3. Những lưu ý "sống còn" về dinh dưỡng</h3>
+<ul>
+<li><strong>Năng lượng và Chất béo:</strong> Trẻ em cần lượng chất béo cao cho não bộ. Đa số sữa hạt thấp năng lượng hơn sữa mẹ.</li>
+<li><strong>Canxi và Vitamin D:</strong> Sữa hạt tự nhiên thường không chứa đủ Canxi cho xương.</li>
+<li><strong>Độ tuổi:</strong> Không nên dùng sữa hạt thay thế hoàn toàn sữa mẹ/công thức cho trẻ dưới 1 tuổi.</li>
+</ul>
+<h3>4. Chiến lược bổ sung theo độ tuổi</h3>
+<table style="width:100%;border-collapse:collapse;margin:16px 0"><tr style="background:var(--sage);color:#fff"><th style="padding:12px;text-align:left">Giai đoạn</th><th style="padding:12px">Vai trò</th><th style="padding:12px">Loại hạt khuyến khích</th></tr><tr style="border-bottom:1px solid #eee"><td style="padding:12px">Dưới 1 tuổi</td><td style="padding:12px">Thực phẩm bổ trợ (lượng nhỏ)</td><td style="padding:12px">Hạt sen, yến mạch</td></tr><tr style="border-bottom:1px solid #eee"><td style="padding:12px">1 - 5 tuổi</td><td style="padding:12px">Bữa phụ dinh dưỡng (200-300ml/ngày)</td><td style="padding:12px">Hạnh nhân, óc chó, macca</td></tr><tr><td style="padding:12px">Trên 5 tuổi</td><td style="padding:12px">Thay thế hoặc kết hợp linh hoạt</td><td style="padding:12px">Đa dạng theo sở thích</td></tr></table>
+<h3>5. Quy tắc 3K cho "Cha mẹ thông thái"</h3>
+<ol>
+<li><strong>Không thay thế hoàn toàn:</strong> Sữa hạt là thực phẩm bổ sung, không phải nguồn dinh dưỡng duy nhất.</li>
+<li><strong>Kiểm soát thành phần:</strong> Ưu tiên sữa ít đường hoặc không đường.</li>
+<li><strong>Kết hợp đa dạng:</strong> Phối hợp sữa hạt cùng chế độ ăn dặm đầy đủ đạm và chất xơ.</li>
+</ol>`
+  },
+  blog4: {
+    title: '5 Công Thức Smoothie Từ Sữa Hạt Ngon Xuất Sắc',
+    cat: 'Công Thức', date: '01/04/2026',
+    content: `<p>Smoothie kết hợp sữa hạt đang trở thành một lối sống, mở ra cơ hội sáng tạo và tính cá nhân hóa trong dinh dưỡng.</p>
+<h3>1. Xu hướng "Dinh dưỡng đa tầng"</h3>
+<ul>
+<li><strong>Hương vị đột phá:</strong> Béo ngậy tự nhiên của hạt làm nền cho trái cây nhiệt đới.</li>
+<li><strong>Thẩm mỹ thị giác:</strong> Màu sắc Matcha, xoài, dâu tây tạo "tác phẩm nghệ thuật" trong ly.</li>
+<li><strong>Tính tiện dụng:</strong> Thay thế bữa sáng nhanh gọn nhưng đủ chất xơ và protein.</li>
+</ul>
+<h3>2. Điểm danh 5 công thức "Golden Ratio"</h3>
+<ol>
+<li><strong>🍌 Smoothie Chuối & Bơ Đậu Phộng:</strong> Cung cấp năng lượng tức thì, phù hợp cho người tập luyện.</li>
+<li><strong>🍵 Matcha Xoài & Sữa Hạnh Nhân:</strong> Vị chát nhẹ trà xanh kết hợp ngọt thanh của xoài.</li>
+<li><strong>🍓 Dâu Tây, Việt Quất & Sữa Hạt Điều:</strong> Công thức chống oxy hóa và làm đẹp da.</li>
+<li><strong>🍫 Socola, Yến Mạch & Sữa Óc Chó:</strong> Vị đậm đà, tăng cường trí não và tập trung.</li>
+<li><strong>🍍 Smoothie Nhiệt Đới (Dứa, Dừa & Sữa Hạt):</strong> Tươi mát, sảng khoái.</li>
+</ol>
+<h3>3. Giá trị thương hiệu</h3>
+<ul>
+<li><strong>Xây dựng cộng đồng:</strong> Khách hàng mua "giải pháp" cho cơ thể khỏe đẹp.</li>
+<li><strong>Tăng vòng đời sản phẩm:</strong> Khuyến khích sử dụng sữa hạt mỗi ngày theo nhiều cách.</li>
+<li><strong>Định vị chuyên gia:</strong> Thương hiệu dẫn dắt lối sống lành mạnh.</li>
+</ul>
+<p><em>Trong 5 công thức trên, bạn thấy sự kết hợp nào là tiềm năng nhất cho thực đơn hàng ngày?</em></p>`
+  },
+  blog5: {
+    title: 'Omega-3 Trong Sữa Óc Chó: Đầu Tư Cho "Tài Sản" Não Bộ',
+    cat: 'Dinh Dưỡng', date: '28/03/2026',
+    content: `<p>Trong kỷ nguyên kinh tế tri thức, sức khỏe trí não đang trở thành "tài sản" cần được bảo vệ và đầu tư dài hạn.</p>
+<h3>1. Vai trò cốt lõi của ALA</h3>
+<ul>
+<li><strong>Tỷ lệ vàng:</strong> Óc chó là loại hạt duy nhất có hàm lượng ALA cao đáng kể. Một ly sữa óc chó cung cấp gần đủ ALA khuyến nghị hàng ngày.</li>
+<li><strong>Cơ chế bảo vệ:</strong> ALA giảm viêm hệ thần kinh, cải thiện tốc độ xử lý thông tin và bảo vệ tế bào não khỏi oxy hóa.</li>
+</ul>
+<h3>2. Lợi ích cho từng nhóm đối tượng</h3>
+<ul>
+<li><strong>🧒 Trẻ em:</strong> Omega-3 tăng cường khả năng tập trung, ghi nhớ và phát triển thị giác.</li>
+<li><strong>💼 Nhân viên văn phòng:</strong> "Nhiên liệu" duy trì sự tỉnh táo và bảo vệ hệ thần kinh trước áp lực.</li>
+<li><strong>👴 Người cao tuổi:</strong> Giảm nguy cơ Alzheimer hay sa sút trí tuệ, nâng cao chất lượng sống.</li>
+</ul>
+<h3>3. Giá trị cạnh tranh của Sữa óc chó Dana</h3>
+<ol>
+<li><strong>Hàm lượng minh bạch:</strong> Cam kết hàm lượng Omega-3 thực tế trong mỗi ly sữa.</li>
+<li><strong>Công nghệ chế biến:</strong> Chiết xuất lạnh/ép chậm giữ trọn vẹn liên kết Omega-3.</li>
+<li><strong>Hương vị tối ưu:</strong> Loại bỏ vị đắng chát vỏ lụa, mang lại trải nghiệm mượt mà.</li>
+</ol>
+<p><em>Đầu tư vào sức khỏe trí não là xu hướng tất yếu của người tiêu dùng hiện đại — ưu tiên chất lượng hơn số lượng và khoa học hơn cảm tính.</em></p>`
+  },
+  blog6: {
+    title: 'Pha Latte Hạnh Nhân Tại Nhà: Khi Sự Tiện Lợi Gặp Gỡ Đẳng Cấp Premium',
+    cat: 'Công Thức', date: '25/03/2026',
+    content: `<p>Xu hướng "The Professional Home-Barista" đang bùng nổ. Người tiêu dùng khao khát hương vị tinh tế của quán cà phê đặc sản ngay tại gian bếp nhà mình.</p>
+<h3>1. Tại sao là Sữa Hạnh Nhân?</h3>
+<ul>
+<li><strong>Calo thấp:</strong> Phù hợp kiểm soát cân nặng nhưng vẫn giữ độ béo ngậy (creamy).</li>
+<li><strong>Hương vị đặc trưng:</strong> Vị bùi hạnh nhân rang kết hợp hậu vị đắng nhẹ Espresso tạo bản giao hưởng phức hợp.</li>
+<li><strong>Chỉ số đường huyết thấp:</strong> An toàn cho năng lượng ổn định trong ngày.</li>
+</ul>
+<h3>2. Bí quyết "Ngon Như Quán"</h3>
+<ul>
+<li><strong>Sữa hạnh nhân Dana – "The Perfect Base":</strong> Tối ưu hóa cấu trúc để tạo bọt (frothing) tốt, giải quyết bài toán micro-foam.</li>
+<li><strong>Nhiệt độ then chốt:</strong> Duy trì 60°C - 65°C để giữ vị ngọt tự nhiên.</li>
+<li><strong>Cân bằng tỷ lệ:</strong> Một shot Espresso đậm đặc là đối trọng hoàn hảo với sữa hạnh nhân thanh tao.</li>
+</ul>
+<h3>3. Giá trị kinh tế từ việc tự pha chế</h3>
+<ol>
+<li><strong>Tiết kiệm chi phí:</strong> Chỉ chiếm khoảng 30-40% giá thành tại chuỗi cà phê cao cấp.</li>
+<li><strong>Kiểm soát thành phần:</strong> Hoàn toàn làm chủ lượng đường và chất lượng cà phê.</li>
+<li><strong>Cá nhân hóa:</strong> Thêm bột quế, tinh chất vani hoặc điều chỉnh độ đậm nhạt theo ý thích.</li>
+</ol>
+<p><em>Bạn đã sẵn sàng để trở thành "Barista" ngay tại căn bếp của mình sáng nay chưa?</em></p>`
+  },
+  blog7: {
+    title: 'Sữa Hạt Có Giúp Giảm Cân Không? Sự Thật Khoa Học',
+    cat: 'Fitness', date: '22/03/2026',
+    content: `<p>Dưới góc độ phân tích dữ liệu dinh dưỡng, việc giảm cân không đến từ bản thân loại thực phẩm, mà đến từ cách tích hợp nó vào tổng lượng calo (TDEE).</p>
+<h3>1. Tại sao sữa hạt hỗ trợ giảm cân?</h3>
+<ul>
+<li><strong>Mật độ calo thấp:</strong> So với sữa bò nguyên kem (~150 calo/ly), sữa hạt không đường chỉ chứa 30 - 60 calo. Tạo thâm hụt calo dễ dàng.</li>
+<li><strong>Chỉ số đường huyết GI thấp:</strong> Ít gây đột biến Insulin — hormone thúc đẩy tích trữ mỡ.</li>
+<li><strong>Hỗ trợ trao đổi chất:</strong> Magie trong hạt điều, Vitamin E trong hạnh nhân là chất xúc tác cho chuyển hóa tế bào.</li>
+</ul>
+<h3>2. Những "cái bẫy" Marketing cần tránh</h3>
+<ul>
+<li><strong>Đường ẩn:</strong> Nhiều sữa hạt đóng hộp chứa đường tinh luyện cao để tăng hương vị.</li>
+<li><strong>Chất làm đặc & Bảo quản:</strong> Có thể gây viêm nhẹ hoặc ảnh hưởng hệ vi sinh đường ruột.</li>
+<li><strong>Lầm tưởng về lượng dùng:</strong> Dù calo thấp, uống quá 500ml/ngày vẫn gián đoạn kế hoạch giảm cân.</li>
+</ul>
+<h3>3. Chiến lược tích hợp sữa hạt vào thực đơn giảm cân</h3>
+<ol>
+<li><strong>Ưu tiên "Unsweetened":</strong> Sữa hạt tự nấu hoặc dòng không đường, kiểm soát 100% đầu vào.</li>
+<li><strong>Sử dụng làm bữa phụ:</strong> Một ly sữa hạt hạnh nhân lúc 4 giờ chiều cắt cơn thèm ăn, ngăn ăn quá nhiều bữa tối.</li>
+<li><strong>Thay thế chất béo xấu:</strong> Dùng sữa hạt thay kem béo trong cà phê hoặc soup để giảm chất béo bão hòa.</li>
+</ol>
+<p><em>Sữa hạt là công cụ quản lý cân nặng hiệu quả khi và chỉ khi được sử dụng trong chế độ ăn uống có kiểm soát. Giá trị thật sự nằm ở khả năng cung cấp dinh dưỡng sạch mà không gây áp lực lên quỹ calo hàng ngày.</em></p>`
+  }
+};
+
+function openBlogDetail(id) {
+  const blog = blogData[id];
+  if (!blog) return;
+  const el = document.getElementById('blog-detail-content');
+  el.innerHTML = `<span style="display:inline-block;background:var(--sage);color:#fff;padding:4px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;margin-bottom:12px">${blog.cat}</span>
+    <p style="color:var(--gray);font-size:0.85rem;margin-bottom:24px">${blog.date}</p>
+    <h2 style="font-size:1.6rem;margin-bottom:24px;color:var(--dark)">${blog.title}</h2>
+    ${blog.content}`;
+  document.getElementById('blog-detail-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+function closeBlogDetail() {
+  document.getElementById('blog-detail-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.getElementById('blog-detail-overlay')?.addEventListener('click', function(e) {
+  if (e.target === this) closeBlogDetail();
+});
+</script>
 </body>
 </html>
