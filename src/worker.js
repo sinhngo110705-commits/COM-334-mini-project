@@ -42,7 +42,7 @@ async function runMigrations(env) {
     await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_blogs_category ON blogs(category)`).run();
 
     // Check if blogs already seeded
-    const existing = await env.DB.prepare('SELECT COUNT(*) as c FROM blogs').first();
+    const existing = await env.DB.prepare("SELECT COUNT(*) as c FROM blogs WHERE id = 'blg_dinh_duong_1'").first();
     if (existing && existing.c > 0) return; // already seeded
 
     // Seed 6 initial blog posts
