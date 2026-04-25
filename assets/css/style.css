@@ -1129,6 +1129,67 @@ section { padding: var(--section-gap) 0; }
 .profile-nav a:hover, .profile-nav a.active { background: var(--sage-ultra-light); color: var(--sage-dark); }
 .profile-nav a.active svg { color: var(--sage); }
 
+/* =================== MODAL SYSTEM =================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  padding: 20px;
+}
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+.modal-container {
+  background: var(--white);
+  width: 100%;
+  max-width: 1000px;
+  max-height: 90vh;
+  border-radius: var(--radius-xl);
+  position: relative;
+  overflow-y: auto;
+  transform: translateY(40px) scale(0.95);
+  transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+  box-shadow: var(--shadow-lg);
+}
+.modal-overlay.active .modal-container {
+  transform: translateY(0) scale(1);
+}
+.modal-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 40px;
+  height: 40px;
+  background: var(--off-white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: var(--transition-fast);
+}
+.modal-close:hover { background: var(--sage-ultra-light); transform: rotate(90deg); }
+.modal-close svg { width: 24px; height: 24px; color: var(--dark); }
+
+.modal-content {
+  padding: 64px;
+}
+
+@media (max-width: 768px) {
+  .modal-content { padding: 32px 20px; }
+  .modal-container { max-height: 100vh; border-radius: 0; }
+  .modal-overlay { padding: 0; }
+}
+
 /* =================== PRODUCT DETAIL =================== */
 .product-detail-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
 .product-gallery-main {

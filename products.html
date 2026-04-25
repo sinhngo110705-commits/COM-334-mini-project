@@ -94,6 +94,37 @@
 <script src="assets/js/cart.js"></script>
 <script src="assets/js/account.js"></script>
 <script>
+  // Product enhancement data
+  const PRODUCT_STORIES = {
+    'sp001': {
+        feature: 'Hạnh nhân California hạng A',
+        description: 'Sữa Hạnh Nhân Dana được làm từ những hạt hạnh nhân nhập khẩu trực tiếp từ California, được rang nhẹ tay để giữ nguyên hương vị béo ngậy đặc trưng. Mỗi ly sữa chứa trọn vẹn Vitamin E hỗ trợ chống lão hóa và Magie giúp giảm căng thẳng.',
+        benefits: ['100% Thuần thực vật', 'Không cholesterol', 'Tốt cho da & tóc']
+    },
+    'sp002': {
+        feature: 'Hạt điều Bình Phước loại 1',
+        description: 'Chúng tôi tuyển chọn những hạt điều Bình Phước căng mẩy nhất, rang muối nhẹ để khơi gợi vị ngọt béo tự nhiên. Kết cấu mịn màng như kem, đây là lựa chọn tuyệt vời để pha Latte hoặc làm sinh tố bổ dưỡng.',
+        benefits: ['Béo lành mạnh', 'Hỗ trợ dạ dày', 'Giàu canxi']
+    },
+    'sp003': {
+        feature: 'Óc chó đỏ Mỹ & Mật ong rừng',
+        description: 'Sự kết hợp hoàn hảo giữa vị béo bùi của hạt óc chó giàu Omega-3 và vị ngọt thanh của mật ong rừng. Sản phẩm được thiết kế đặc biệt để hỗ trợ trí não cho trẻ nhỏ và mẹ bầu.',
+        benefits: ['Phát triển trí não', 'Tốt cho tim mạch', 'Năng lượng bền bỉ']
+    },
+    'sp004': {
+        feature: 'Hạt sen tươi Đồng Tháp Mười',
+        description: 'Sử dụng hạt sen tươi vừa thu hoạch, được bóc vỏ và bỏ tâm thủ công để đảm bảo vị ngọt thanh không đắng. Sữa hạt sen là "liều thuốc" tự nhiên giúp bạn có giấc ngủ sâu và làn da tươi trẻ.',
+        benefits: ['An thần, ngủ ngon', 'Mát gan, giải độc', 'Vị thanh khiết']
+    },
+    'sp005': {
+        feature: 'Yến mạch nguyên cám Úc',
+        description: 'Yến mạch được cán vỡ và ninh chậm để chiết xuất tối đa chất xơ Beta-glucan. Với hương vani tự nhiên dịu nhẹ, sản phẩm giúp no lâu, phù hợp cho người đang trong chế độ giảm cân hoặc kiểm soát đường huyết.',
+        benefits: ['Nhiều chất xơ', 'Kiểm soát cân nặng', 'No lâu, ít calo']
+    }
+  };
+
+  let allProducts = [];
+
   // Fetch and render products
   async function loadProducts(category = 'all') {
     const grid = document.getElementById('product-grid');
@@ -112,13 +143,15 @@
         return;
       }
 
+      allProducts = data.products;
+
       grid.innerHTML = data.products.map(p => {
         const badgeHtml = p.badge ? `<span class="product-card-badge ${p.badge === 'Mới' || p.badge === 'Tiết kiệm' ? 'hot' : ''}">${p.badge}</span>` : '';
         const tagsHtml = p.tags && p.tags.length ? `<div class="product-card-tags">${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : '';
         const oldPriceHtml = p.original_price ? `<span class="price-old">${p.original_price.toLocaleString('vi-VN')}đ</span>` : '';
         
         return `
-          <div class="product-card tilt-card" data-category="${p.category}" style="animation: scaleIn 0.4s ease forwards">
+          <div class="product-card tilt-card" data-category="${p.category}" style="animation: scaleIn 0.4s ease forwards" onclick="openDetail('${p.id}')">
             <div class="product-card-img">${badgeHtml}<img src="${p.image_url}" alt="${p.name}" /></div>
             <div class="product-card-body">
               ${tagsHtml}
@@ -126,7 +159,7 @@
               <p>${p.description || ''}</p>
               <div class="product-card-footer">
                 <div><span class="price">${p.price.toLocaleString('vi-VN')}đ</span>${oldPriceHtml}</div>
-                <button class="add-btn" onclick='addToCart(${JSON.stringify(p)})'>
+                <button class="add-btn" onclick="event.stopPropagation(); addToCart('${p.id}')">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 </button>
               </div>
@@ -138,8 +171,76 @@
     }
   }
 
+  function openDetail(id) {
+    const p = allProducts.find(x => x.id === id);
+    if (!p) return;
+
+    const story = PRODUCT_STORIES[p.id] || { 
+        feature: 'Sản phẩm Dana nguyên chất', 
+        description: p.description, 
+        benefits: ['Dinh dưỡng cao', 'Thuần tự nhiên'] 
+    };
+
+    const modal = document.getElementById('product-modal');
+    const content = document.getElementById('modal-body');
+    
+    const oldPriceHtml = p.original_price ? `<span class="price-old" style="font-size:1.2rem;margin-left:12px">${p.original_price.toLocaleString('vi-VN')}đ</span>` : '';
+
+    content.innerHTML = `
+        <div class="product-detail-layout">
+            <div class="product-gallery-main">
+                <img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover" />
+            </div>
+            <div class="product-detail-info">
+                <div class="product-card-tags" style="margin-bottom:16px">
+                    <span class="tag" style="background:var(--sage-ultra-light);color:var(--sage-dark)">${p.category.toUpperCase()}</span>
+                    ${p.badge ? `<span class="tag" style="background:#fee2e2;color:#ef4444">${p.badge}</span>` : ''}
+                </div>
+                <h1 style="font-size:2.5rem;line-height:1.2;margin-bottom:12px">${p.name}</h1>
+                <p style="color:var(--sage);font-weight:600;font-size:1.1rem;margin-bottom:16px">✨ ${story.feature}</p>
+                
+                <div class="price-block">
+                    <span class="price" style="font-size:2rem;color:var(--sage-dark);font-weight:700">${p.price.toLocaleString('vi-VN')}đ</span>
+                    ${oldPriceHtml}
+                </div>
+
+                <div style="background:var(--off-white);padding:24px;border-radius:var(--radius-md);margin:24px 0">
+                    <p style="color:var(--dark-soft);line-height:1.8;font-size:1.05rem">${story.description}</p>
+                </div>
+
+                <div style="margin-bottom:32px">
+                    <h5 style="margin-bottom:12px;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;color:var(--gray)">Điểm nổi bật:</h5>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                        ${story.benefits.map(b => `<div style="background:white;border:1px solid var(--sage-light);padding:6px 12px;border-radius:var(--radius-sm);font-size:0.85rem;display:flex;align-items:center;gap:6px"><svg style="width:14px;height:14px;color:var(--sage)" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>${b}</div>`).join('')}
+                    </div>
+                </div>
+
+                <div class="hero-actions" style="margin-top:auto">
+                    <button class="btn btn-primary" style="flex:1;justify-content:center;padding:16px 32px" onclick="addToCart('${p.id}'); closeModal()">
+                        Thêm vào giỏ hàng
+                    </button>
+                    <button class="btn btn-outline" style="padding:16px" onclick="closeModal()">
+                        Quay lại
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('product-modal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
   // Handle Add to cart
-  function addToCart(p) {
+  function addToCart(id) {
+    const p = allProducts.find(x => x.id === id);
+    if (!p) return;
+
     Cart.addItem({
       id: p.id,
       name: p.name,
@@ -148,6 +249,17 @@
       variant: 'Mặc định',
       qty: 1
     });
+
+    // Simple toast
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--sage-dark);color:white;padding:16px 24px;border-radius:12px;box-shadow:var(--shadow-lg);z-index:10000;animation:slideUp 0.3s ease';
+    toast.innerHTML = `Đã thêm <b>${p.name}</b> vào giỏ hàng!`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 400);
+    }, 2500);
   }
 
   // Filter tabs
@@ -163,5 +275,17 @@
   // Initial load
   document.addEventListener('DOMContentLoaded', () => loadProducts('all'));
 </script>
+
+<!-- Product Modal -->
+<div class="modal-overlay" id="product-modal" onclick="if(event.target === this) closeModal()">
+    <div class="modal-container">
+        <button class="modal-close" onclick="closeModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="modal-content" id="modal-body">
+            <!-- Content injected by JS -->
+        </div>
+    </div>
+</div>
 </body>
 </html>
