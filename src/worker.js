@@ -163,7 +163,8 @@ export default {
         case '/api/migrate':
           try {
             await runMigrations(env);
-            response = new Response(JSON.stringify({ ok: true, message: 'Migration forced successfully' }), {
+            const data = await env.DB.prepare('SELECT * FROM blogs').all();
+            response = new Response(JSON.stringify({ ok: true, message: 'Migration forced successfully', data: data.results }), {
               status: 200, headers: { 'Content-Type': 'application/json' }
             });
           } catch (e) {
