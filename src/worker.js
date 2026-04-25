@@ -62,6 +62,24 @@ export default {
       return new Response(null, { status: 204, headers: CORS });
     }
 
+    // Serve R2 images via /cdn/*
+    if (path.startsWith('/cdn/')) {
+      const key = path.replace('/cdn/', '');
+      try {
+        const object = await env.IMAGES.get(key);
+        if (!object) {
+          return new Response('Not Found', { status: 404 });
+        }
+        const headers = new Headers();
+        object.writeHttpMetadata(headers);
+        headers.set('Cache-Control', 'public, max-age=31536000');
+        for (const [k, v] of Object.entries(CORS)) headers.set(k, v);
+        return new Response(object.body, { headers });
+      } catch(e) {
+        return new Response('Error loading image', { status: 500 });
+      }
+    }
+
     // Only handle /api/* routes - let assets handle the rest
     if (!path.startsWith('/api/')) {
       return env.ASSETS.fetch(request);

@@ -40,7 +40,7 @@
     <div id="featured-blog-container"></div>
 
     <!-- Blog Grid -->
-    <div class="blog-cards" data-stagger id="blog-grid">
+    <div class="blog-cards" id="blog-grid">
       <div style="text-align:center;padding:40px;width:100%;color:var(--gray)">Đang tải bài viết...</div>
     </div>
 
@@ -124,6 +124,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         '</a>';
       }
     });
+
+    // Ensure cards are visible (override any stagger animation)
+    gridContainer.classList.add('revealed');
 
     // Re-initialize filtering logic for tabs
     var tabs = document.querySelectorAll('.filter-tab');
