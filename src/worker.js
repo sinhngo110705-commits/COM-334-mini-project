@@ -98,9 +98,10 @@ async function runMigrations(env) {
     ];
 
     for (const blog of BLOGS) {
+      const offset = `-${blog.days_ago} days`;
       await env.DB.prepare(
-        `INSERT OR REPLACE INTO blogs (id, title, category, content, image_url, is_active, created_at) VALUES (?,?,?,?,?,1, datetime('now', ? || ' days'))`
-      ).bind(blog.id, blog.title, blog.category, blog.content, blog.image_url, `-${blog.days_ago}`).run();
+        `INSERT OR REPLACE INTO blogs (id, title, category, content, image_url, is_active, created_at) VALUES (?,?,?,?,?,1, datetime('now', ?))`
+      ).bind(blog.id, blog.title, blog.category, blog.content, blog.image_url, offset).run();
     }
   } catch(e) {
     console.error('Migration error:', e.message);
