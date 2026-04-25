@@ -66,7 +66,14 @@
   </div>
 </section>
 
-<footer class="footer"><div class="container footer-main"><div class="footer-brand"><div class="nav-logo"><img src="assets/images/logo.jpeg" alt="Dana Logo" class="logo-icon" style="width:42px;height:42px;border-radius:12px;object-fit:cover" /><span>Dana</span></div><p>Sữa Hạt Dana – Dinh dưỡng thuần tự nhiên.</p><div class="social-links"><a href="https://web.facebook.com/profile.php?id=61575745817207" class="social-link" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a></div></div><div class="footer-col"><h5>Sản Phẩm</h5><ul><li><a href="products.html">Sữa Hạnh Nhân</a></li><li><a href="products.html">Sữa Hạt Điều</a></li><li><a href="products.html">Combo</a></li></ul></div><div class="footer-col"><h5>Blog</h5><ul><li><a href="let blogsCache = {};
+<footer class="footer"><div class="container footer-main"><div class="footer-brand"><div class="nav-logo"><img src="assets/images/logo.jpeg" alt="Dana Logo" class="logo-icon" style="width:42px;height:42px;border-radius:12px;object-fit:cover" /><span>Dana</span></div><p>Sữa Hạt Dana – Dinh dưỡng thuần tự nhiên.</p><div class="social-links"><a href="https://web.facebook.com/profile.php?id=61575745817207" class="social-link" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a></div></div><div class="footer-col"><h5>Sản Phẩm</h5><ul><li><a href="products.html">Sữa Hạnh Nhân</a></li><li><a href="products.html">Sữa Hạt Điều</a></li><li><a href="products.html">Combo</a></li></ul></div><div class="footer-col"><h5>Blog</h5><ul><li><a href="blog.html">Dinh dưỡng</a></li><li><a href="blog.html">Công thức</a></li><li><a href="blog.html">Fitness</a></li></ul></div><div class="footer-col"><h5>Liên Hệ</h5><div class="footer-contact-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>suahatdana@gmail.com</span></div></div></div><div class="container"><div class="footer-bottom"><p>© 2026 Sữa Hạt Dana</p><p class="powered">Thương hiệu Việt Nam 🇻🇳</p></div></div></footer>
+
+<div class="toast-container"></div>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/cart.js"></script>
+<script src="assets/js/account.js"></script>
+<script>
+let blogsCache = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -87,52 +94,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     data.blogs.forEach((b, i) => {
       blogsCache[b.id] = b;
       const d = new Date(b.created_at);
-      const meta = d.toLocaleDateString('vi-VN') + ` · ${Math.floor(Math.random() * 5) + 3} phút đọc`;
+      const meta = d.toLocaleDateString('vi-VN') + ' · ' + (Math.floor(Math.random() * 5) + 3) + ' phút đọc';
       const snippet = (b.content || '').replace(/<[^>]+>/g, '').substring(0, 150) + '...';
-      const catClass = (b.category || 'all').toLowerCase().replace(/ /g, '-');
+      const catClass = (b.category || 'all').toLowerCase().replace(/ /g, '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       const img = b.image_url || 'assets/images/logo.jpeg';
 
       if (i === 0) {
-        // Featured Post
-        featContainer.innerHTML = `
-          <div class="blog-card" style="flex-direction:row;display:flex;margin-bottom:48px;border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-lg)" data-reveal="up" data-category="${catClass}">
-            <div style="flex:1;height:360px;overflow:hidden">
-              <img src="${img}" alt="${b.title}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.6s ease" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
-            </div>
-            <div class="blog-card-body" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px">
-              <span class="blog-card-cat" style="position:static;display:inline-block;width:fit-content;margin-bottom:12px">${b.category} · Nổi bật</span>
-              <p class="blog-meta">${meta}</p>
-              <h3 style="margin-bottom:16px">${b.title}</h3>
-              <p style="color:var(--gray);line-height:1.8;margin-bottom:24px">${snippet}</p>
-              <a href="#${b.id}" class="read-more" onclick="openBlogDetail('${b.id}');return false;">Đọc bài viết <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
-            </div>
-          </div>
-        `;
+        featContainer.innerHTML = '<div class="blog-card" style="flex-direction:row;display:flex;margin-bottom:48px;border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-lg)" data-reveal="up" data-category="' + catClass + '">' +
+          '<div style="flex:1;height:360px;overflow:hidden">' +
+            '<img src="' + img + '" alt="' + b.title + '" style="width:100%;height:100%;object-fit:cover;transition:transform 0.6s ease" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'" />' +
+          '</div>' +
+          '<div class="blog-card-body" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px">' +
+            '<span class="blog-card-cat" style="position:static;display:inline-block;width:fit-content;margin-bottom:12px">' + b.category + ' · Nổi bật</span>' +
+            '<p class="blog-meta">' + meta + '</p>' +
+            '<h3 style="margin-bottom:16px">' + b.title + '</h3>' +
+            '<p style="color:var(--gray);line-height:1.8;margin-bottom:24px">' + snippet + '</p>' +
+            '<a href="#' + b.id + '" class="read-more" onclick="openBlogDetail(\'' + b.id + '\');return false;">Đọc bài viết <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>' +
+          '</div>' +
+        '</div>';
       } else {
-        // Grid Post
-        gridContainer.innerHTML += `
-          <a href="#${b.id}" class="blog-card" data-category="${catClass}" onclick="openBlogDetail('${b.id}');return false;">
-            <div class="blog-card-img"><img src="${img}" alt="${b.title}" /><span class="blog-card-cat">${b.category}</span></div>
-            <div class="blog-card-body">
-              <p class="blog-meta">${meta}</p>
-              <h4>${b.title}</h4>
-              <p>${snippet.substring(0, 80)}...</p>
-              <span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
-            </div>
-          </a>
-        `;
+        gridContainer.innerHTML += '<a href="#' + b.id + '" class="blog-card" data-category="' + catClass + '" onclick="openBlogDetail(\'' + b.id + '\');return false;">' +
+          '<div class="blog-card-img"><img src="' + img + '" alt="' + b.title + '" /><span class="blog-card-cat">' + b.category + '</span></div>' +
+          '<div class="blog-card-body">' +
+            '<p class="blog-meta">' + meta + '</p>' +
+            '<h4>' + b.title + '</h4>' +
+            '<p>' + snippet.substring(0, 80) + '...</p>' +
+            '<span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>' +
+          '</div>' +
+        '</a>';
       }
     });
 
     // Re-initialize filtering logic for tabs
-    const tabs = document.querySelectorAll('.filter-tab');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
+    var tabs = document.querySelectorAll('.filter-tab');
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        tabs.forEach(function(t) { t.classList.remove('active'); });
         tab.classList.add('active');
-        const filter = tab.dataset.filter;
-        document.querySelectorAll('.blog-card').forEach(card => {
-          if (filter === 'all' || card.dataset.category === filter || card.dataset.category.includes(filter)) {
+        var filter = tab.dataset.filter;
+        document.querySelectorAll('.blog-card').forEach(function(card) {
+          if (filter === 'all' || (card.dataset.category && card.dataset.category.includes(filter))) {
             card.style.display = card.style.flexDirection === 'row' ? 'flex' : 'block';
           } else {
             card.style.display = 'none';
@@ -143,71 +144,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   } catch(err) {
     console.error(err);
+    document.getElementById('blog-grid').innerHTML = '<div style="text-align:center;padding:40px;width:100%;color:var(--gray)">Không thể tải bài viết. Vui lòng thử lại sau.</div>';
   }
 });
 
 function openBlogDetail(id) {
-  const blog = blogsCache[id];
+  var blog = blogsCache[id];
   if (!blog) return;
-  const el = document.getElementById('blog-detail-content');
-  const d = new Date(blog.created_at);
-  const meta = d.toLocaleDateString('vi-VN');
+  var el = document.getElementById('blog-detail-content');
+  var d = new Date(blog.created_at);
+  var meta = d.toLocaleDateString('vi-VN');
   
-  el.innerHTML = \`<span style="display:inline-block;background:var(--sage);color:#fff;padding:4px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;margin-bottom:12px">\${blog.category || 'Chung'}</span>
-    <p style="color:var(--gray);font-size:0.85rem;margin-bottom:24px">\${meta}</p>
-    <h2 style="font-size:1.6rem;margin-bottom:24px;color:var(--dark)">\${blog.title}</h2>
-    <div>\${blog.content}</div>\`;
-  document.getElementById('blog-detail-overlay').style.display = 'block';
-  document.body.style.overflow = 'hidden';
-}
-function closeBlogDetail() {
-  document.getElementById('blog-detail-overlay').style.display = 'none';
-  document.body.style.overflow = '';
-}trì 60°C - 65°C để giữ vị ngọt tự nhiên.</li>
-<li><strong>Cân bằng tỷ lệ:</strong> Một shot Espresso đậm đặc là đối trọng hoàn hảo với sữa hạnh nhân thanh tao.</li>
-</ul>
-<h3>3. Giá trị kinh tế từ việc tự pha chế</h3>
-<ol>
-<li><strong>Tiết kiệm chi phí:</strong> Chỉ chiếm khoảng 30-40% giá thành tại chuỗi cà phê cao cấp.</li>
-<li><strong>Kiểm soát thành phần:</strong> Hoàn toàn làm chủ lượng đường và chất lượng cà phê.</li>
-<li><strong>Cá nhân hóa:</strong> Thêm bột quế, tinh chất vani hoặc điều chỉnh độ đậm nhạt theo ý thích.</li>
-</ol>
-<p><em>Bạn đã sẵn sàng để trở thành "Barista" ngay tại căn bếp của mình sáng nay chưa?</em></p>`
-  },
-  blog7: {
-    title: 'Sữa Hạt Có Giúp Giảm Cân Không? Sự Thật Khoa Học',
-    cat: 'Fitness', date: '22/03/2026',
-    content: `<p>Dưới góc độ phân tích dữ liệu dinh dưỡng, việc giảm cân không đến từ bản thân loại thực phẩm, mà đến từ cách tích hợp nó vào tổng lượng calo (TDEE).</p>
-<h3>1. Tại sao sữa hạt hỗ trợ giảm cân?</h3>
-<ul>
-<li><strong>Mật độ calo thấp:</strong> So với sữa bò nguyên kem (~150 calo/ly), sữa hạt không đường chỉ chứa 30 - 60 calo. Tạo thâm hụt calo dễ dàng.</li>
-<li><strong>Chỉ số đường huyết GI thấp:</strong> Ít gây đột biến Insulin — hormone thúc đẩy tích trữ mỡ.</li>
-<li><strong>Hỗ trợ trao đổi chất:</strong> Magie trong hạt điều, Vitamin E trong hạnh nhân là chất xúc tác cho chuyển hóa tế bào.</li>
-</ul>
-<h3>2. Những "cái bẫy" Marketing cần tránh</h3>
-<ul>
-<li><strong>Đường ẩn:</strong> Nhiều sữa hạt đóng hộp chứa đường tinh luyện cao để tăng hương vị.</li>
-<li><strong>Chất làm đặc & Bảo quản:</strong> Có thể gây viêm nhẹ hoặc ảnh hưởng hệ vi sinh đường ruột.</li>
-<li><strong>Lầm tưởng về lượng dùng:</strong> Dù calo thấp, uống quá 500ml/ngày vẫn gián đoạn kế hoạch giảm cân.</li>
-</ul>
-<h3>3. Chiến lược tích hợp sữa hạt vào thực đơn giảm cân</h3>
-<ol>
-<li><strong>Ưu tiên "Unsweetened":</strong> Sữa hạt tự nấu hoặc dòng không đường, kiểm soát 100% đầu vào.</li>
-<li><strong>Sử dụng làm bữa phụ:</strong> Một ly sữa hạt hạnh nhân lúc 4 giờ chiều cắt cơn thèm ăn, ngăn ăn quá nhiều bữa tối.</li>
-<li><strong>Thay thế chất béo xấu:</strong> Dùng sữa hạt thay kem béo trong cà phê hoặc soup để giảm chất béo bão hòa.</li>
-</ol>
-<p><em>Sữa hạt là công cụ quản lý cân nặng hiệu quả khi và chỉ khi được sử dụng trong chế độ ăn uống có kiểm soát. Giá trị thật sự nằm ở khả năng cung cấp dinh dưỡng sạch mà không gây áp lực lên quỹ calo hàng ngày.</em></p>`
-  }
-};
-
-function openBlogDetail(id) {
-  const blog = blogData[id];
-  if (!blog) return;
-  const el = document.getElementById('blog-detail-content');
-  el.innerHTML = `<span style="display:inline-block;background:var(--sage);color:#fff;padding:4px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;margin-bottom:12px">${blog.cat}</span>
-    <p style="color:var(--gray);font-size:0.85rem;margin-bottom:24px">${blog.date}</p>
-    <h2 style="font-size:1.6rem;margin-bottom:24px;color:var(--dark)">${blog.title}</h2>
-    ${blog.content}`;
+  el.innerHTML = '<span style="display:inline-block;background:var(--sage);color:#fff;padding:4px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;margin-bottom:12px">' + (blog.category || 'Chung') + '</span>' +
+    '<p style="color:var(--gray);font-size:0.85rem;margin-bottom:24px">' + meta + '</p>' +
+    '<h2 style="font-size:1.6rem;margin-bottom:24px;color:var(--dark)">' + blog.title + '</h2>' +
+    '<div>' + blog.content + '</div>';
   document.getElementById('blog-detail-overlay').style.display = 'block';
   document.body.style.overflow = 'hidden';
 }
@@ -215,7 +166,7 @@ function closeBlogDetail() {
   document.getElementById('blog-detail-overlay').style.display = 'none';
   document.body.style.overflow = '';
 }
-document.getElementById('blog-detail-overlay')?.addEventListener('click', function(e) {
+document.getElementById('blog-detail-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeBlogDetail();
 });
 </script>

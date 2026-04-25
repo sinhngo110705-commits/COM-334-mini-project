@@ -27,8 +27,32 @@ function corsResponse(response) {
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
+// Auto-migration: ensure blogs table exists
+async function runMigrations(env) {
+  try {
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS blogs (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      category TEXT,
+      content TEXT,
+      image_url TEXT,
+      is_active INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now'))
+    )`).run();
+    await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_blogs_category ON blogs(category)`).run();
+  } catch(e) { /* ignore if already exists */ }
+}
+
+let migrated = false;
+
 export default {
   async fetch(request, env, ctx) {
+    // Run migrations once per worker lifecycle
+    if (!migrated) {
+      await runMigrations(env);
+      migrated = true;
+    }
+
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
