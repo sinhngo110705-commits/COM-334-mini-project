@@ -41,7 +41,9 @@ async function runMigrations(env) {
     )`).run();
     await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_blogs_category ON blogs(category)`).run();
 
-    // Seed 6 initial blog posts (Force update)
+    // Check if blogs already seeded
+    const existing = await env.DB.prepare("SELECT COUNT(*) as c FROM blogs WHERE id = 'blg_dinh_duong_1'").first();
+    if (existing && existing.c > 0) return; // already seeded
 
     // Seed 6 initial blog posts
     const BLOGS = [
@@ -156,20 +158,6 @@ export default {
       switch (path) {
         case '/api/auth':
           if (method === 'POST') response = await authPost(context);
-          break;
-
-        case '/api/migrate':
-          try {
-            await runMigrations(env);
-            const data = await env.DB.prepare('SELECT * FROM blogs').all();
-            response = new Response(JSON.stringify({ ok: true, message: 'Migration forced successfully', data: data.results }), {
-              status: 200, headers: { 'Content-Type': 'application/json' }
-            });
-          } catch (e) {
-            response = new Response(JSON.stringify({ ok: false, error: e.message, stack: e.stack }), {
-              status: 500, headers: { 'Content-Type': 'application/json' }
-            });
-          }
           break;
 
         case '/api/cart':
