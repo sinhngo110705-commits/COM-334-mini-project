@@ -104,7 +104,7 @@ async function runMigrations(env) {
       ).bind(blog.id, blog.title, blog.category, blog.content, blog.image_url, offset).run();
     }
   } catch(e) {
-    console.error('Migration error:', e.message);
+    throw e;
   }
 }
 
@@ -158,6 +158,19 @@ export default {
       switch (path) {
         case '/api/auth':
           if (method === 'POST') response = await authPost(context);
+          break;
+
+        case '/api/migrate':
+          try {
+            await runMigrations(env);
+            response = new Response(JSON.stringify({ ok: true, message: 'Migration forced successfully' }), {
+              status: 200, headers: { 'Content-Type': 'application/json' }
+            });
+          } catch (e) {
+            response = new Response(JSON.stringify({ ok: false, error: e.message, stack: e.stack }), {
+              status: 500, headers: { 'Content-Type': 'application/json' }
+            });
+          }
           break;
 
         case '/api/cart':
