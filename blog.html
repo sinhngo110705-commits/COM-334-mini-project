@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const img = b.image_url || 'assets/images/logo.jpeg';
 
       if (i === 0) {
-        featContainer.innerHTML = '<div class="blog-card" style="flex-direction:row;display:flex;margin-bottom:48px;border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-lg)" data-reveal="up" data-category="' + catClass + '">' +
+        featContainer.innerHTML = '<div class="blog-card" style="flex-direction:row;display:flex;margin-bottom:48px;border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-lg);opacity:1;transform:none" data-category="' + catClass + '">' +
           '<div style="flex:1;height:360px;overflow:hidden">' +
             '<img src="' + img + '" alt="' + b.title + '" style="width:100%;height:100%;object-fit:cover;transition:transform 0.6s ease" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'" />' +
           '</div>' +
@@ -125,8 +125,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    // Ensure cards are visible (override any stagger animation)
-    gridContainer.classList.add('revealed');
+    // Explicitly reveal all blog cards by adding the 'revealed' class and forcing opacity
+    if (gridContainer) gridContainer.classList.add('revealed');
+    document.querySelectorAll('.blog-card').forEach(function(card) {
+       card.style.opacity = '1';
+       card.style.transform = 'none';
+       card.style.visibility = 'visible';
+    });
 
     // Re-initialize filtering logic for tabs
     var tabs = document.querySelectorAll('.filter-tab');
