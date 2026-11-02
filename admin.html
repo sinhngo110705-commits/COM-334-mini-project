@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -172,7 +172,7 @@
     <form id="admin-login-form">
       <div class="admin-form-group">
         <label>Email Admin</label>
-        <input class="admin-input" type="email" id="adm-email" placeholder="sinhngo110705@gmail.com" required />
+        <input class="admin-input" type="text" id="adm-email" placeholder="sinhngo110705@gmail.com hoặc sinhngo110705" required />
       </div>
       <div class="admin-form-group">
         <label>Mật khẩu</label>
@@ -639,7 +639,7 @@
    Security: All data fetched via authenticated API
    =================================================== */
 
-const API_BASE = '/api';
+const API_BASE = (window.location.protocol === 'file:' || !window.location.port) ? 'http://localhost:8080/api' : '/api';
 let adminToken = localStorage.getItem('dana_admin_token');
 let adminData = null;
 
@@ -664,7 +664,8 @@ function isAuthorizedAdminEmail(email) {
 // =================== LOGIN ===================
 document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('adm-email').value.trim();
+  let email = document.getElementById('adm-email').value.trim();
+  if (email && !email.includes('@')) email = email + '@gmail.com';
   const password = document.getElementById('adm-password').value;
   const errorEl = document.getElementById('adm-error');
 

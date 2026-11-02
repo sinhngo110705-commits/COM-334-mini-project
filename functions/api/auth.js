@@ -1,4 +1,4 @@
-/* ===================================================
+﻿/* ===================================================
    API: /api/auth - Authentication (Register, Login, Logout)
    Security: SHA-256 password hashing via Web Crypto API
    =================================================== */
@@ -88,10 +88,13 @@ export async function onRequestPost(context) {
         return json({ ok: false, message: 'Vui lòng nhập email và mật khẩu.' }, 400);
       }
 
+      const emailInput = email ? email.trim() : '';
+      const emailAlt = emailInput.includes('@') ? emailInput.replace(/@.*$/, '') : (emailInput + '@gmail.com');
+
       const passwordHash = await hashPassword(password);
       let user = await env.DB.prepare(
-        'SELECT id, name, email, phone, role FROM users WHERE email = ? AND password_hash = ?'
-      ).bind(email.trim(), passwordHash).first();
+        'SELECT id, name, email, phone, role FROM users WHERE (email = ? OR email = ?) AND password_hash = ?'
+      ).bind(emailInput, emailAlt, passwordHash).first();
 
       // If user provided DanaAdmin@2026 for an authorized admin email, ensure password hash and role are synced
       const defaultHash = 'ea554d403eec8485c738aa8ec19bf7a6f5bd229b4b1d0f089a1eae749aff2115';
