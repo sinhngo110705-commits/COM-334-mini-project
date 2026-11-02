@@ -1,4 +1,4 @@
-/* ===================================================
+﻿/* ===================================================
    Cloudflare Worker - Main Entry Point
    Sữa Hạt Dana - hnguyenworks.id.vn
    Routes all /api/* requests to handlers

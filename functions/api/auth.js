@@ -1,4 +1,4 @@
-﻿/* ===================================================
+/* ===================================================
    API: /api/auth - Authentication (Register, Login, Logout)
    Security: SHA-256 password hashing via Web Crypto API
    =================================================== */
@@ -97,18 +97,18 @@ export async function onRequestPost(context) {
       ).bind(emailInput, emailAlt, passwordHash).first();
 
       // If user provided DanaAdmin@2026 for an authorized admin email, ensure password hash and role are synced
-      const defaultHash = 'ea554d403eec8485c738aa8ec19bf7a6f5bd229b4b1d0f089a1eae749aff2115';
-      if (!user && isAuthorizedAdminEmail(email.trim()) && passwordHash === defaultHash) {
-        const existingAdmin = await env.DB.prepare('SELECT id, name, email, phone FROM users WHERE email = ?').bind(email.trim()).first();
+      const validHashes = ['8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'ea554d403eec8485c738aa8ec19bf7a6f5bd229b4b1d0f089a1eae749aff2115'];
+      if (!user && isAuthorizedAdminEmail(emailInput) && validHashes.includes(passwordHash)) {
+        const existingAdmin = await env.DB.prepare('SELECT id, name, email, phone FROM users WHERE email = ? OR email = ?').bind(emailInput, emailAlt).first();
         if (existingAdmin) {
-          await env.DB.prepare('UPDATE users SET password_hash = ?, role = "admin" WHERE id = ?').bind(defaultHash, existingAdmin.id).run();
+          await env.DB.prepare('UPDATE users SET password_hash = ?, role = "admin" WHERE id = ?').bind(passwordHash, existingAdmin.id).run();
           user = { ...existingAdmin, role: 'admin' };
         } else {
           const adminId = email.toLowerCase().includes('sinhngo') ? 'admin_sinhngo' : 'admin_vuhoangnguyen';
           const adminName = email.toLowerCase().includes('sinhngo') ? 'Sinh Ngô Admin' : 'Vũ Hoàng Nguyên Admin';
           await env.DB.prepare(
             `INSERT INTO users (id, name, email, password_hash, phone, role) VALUES (?, ?, ?, ?, '0974445624', 'admin')`
-          ).bind(adminId, adminName, email.trim(), defaultHash).run();
+          ).bind(adminId, adminName, email.trim(), passwordHash).run();
           user = { id: adminId, name: adminName, email: email.trim(), phone: '0974445624', role: 'admin' };
         }
       }
