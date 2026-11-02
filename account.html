@@ -39,6 +39,9 @@
           <div class="form-group">
             <label for="login-password">Mật khẩu</label>
             <input class="form-control" type="password" id="login-password" placeholder="••••••••" required />
+            <div style="text-align:right;margin-top:6px">
+              <a href="#" onclick="openForgotPasswordModal();return false;" style="font-size:0.8rem;color:var(--sage);font-weight:600">Quên mật khẩu?</a>
+            </div>
           </div>
           <p class="error-msg" id="login-error"></p>
           <button type="submit" class="btn btn-primary w-100" style="justify-content:center;margin-top:8px">Đăng nhập</button>
@@ -142,6 +145,42 @@
   </div>
 </section>
 
+<!-- Forgot Password Modal -->
+<div id="forgot-password-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)">
+  <div style="background:#fff;padding:32px;border-radius:16px;width:100%;max-width:440px;box-shadow:0 20px 40px rgba(0,0,0,0.2);position:relative">
+    <button onclick="closeForgotPasswordModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--gray)">✕</button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:2rem;margin-bottom:6px">🔑</div>
+      <h3 style="margin:0;font-size:1.3rem;color:var(--dark)">Khôi phục mật khẩu</h3>
+      <p style="font-size:0.85rem;color:var(--gray);margin-top:4px">Nhập email để nhận mã xác nhận OTP (6 chữ số)</p>
+    </div>
+
+    <!-- Step 1: Request OTP -->
+    <div id="fp-step-1">
+      <div class="form-group" style="margin-bottom:16px">
+        <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px">Địa chỉ Email đã đăng ký</label>
+        <input type="email" id="fp-email" class="form-control" placeholder="example@email.com" style="width:100%;border:1px solid #cbd5e1;padding:10px 14px;border-radius:8px" />
+      </div>
+      <p id="fp-step-1-msg" style="font-size:0.82rem;margin-bottom:14px;display:none"></p>
+      <button type="button" id="btn-request-otp" class="btn btn-primary w-100" style="justify-content:center" onclick="requestAccountOtp()">Gửi mã OTP</button>
+    </div>
+
+    <!-- Step 2: Enter OTP & New Password (Hidden by default) -->
+    <div id="fp-step-2" style="display:none;margin-top:16px">
+      <div class="form-group" style="margin-bottom:14px">
+        <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px">Mã OTP (6 chữ số)</label>
+        <input type="text" id="fp-otp" class="form-control" placeholder="VD: 123456" maxlength="6" style="width:100%;border:1px solid #cbd5e1;padding:10px 14px;border-radius:8px;font-family:monospace;font-size:1.1rem;text-align:center;letter-spacing:4px" />
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:6px">Mật khẩu mới (≥ 6 ký tự)</label>
+        <input type="password" id="fp-new-pass" class="form-control" placeholder="••••••••" style="width:100%;border:1px solid #cbd5e1;padding:10px 14px;border-radius:8px" />
+      </div>
+      <p id="fp-step-2-msg" style="font-size:0.82rem;margin-bottom:14px;display:none"></p>
+      <button type="button" id="btn-confirm-reset" class="btn btn-primary w-100" style="justify-content:center" onclick="confirmPasswordReset()">Đổi mật khẩu</button>
+    </div>
+  </div>
+</div>
+
 <footer class="footer" style="padding:40px 0"><div class="container"><div class="footer-bottom"><p>© 2026 Sữa Hạt Dana. Bảo lưu mọi quyền.</p><p class="powered">Thương hiệu Việt Nam 🇻🇳</p></div></div></footer>
 
 <div class="toast-container"></div>
@@ -156,6 +195,124 @@ function showProfileTab(id) {
   document.querySelectorAll('.profile-nav a').forEach(a => a.classList.remove('active'));
   const link = document.querySelector(`.profile-nav a[href="#${id}"]`);
   if (link) link.classList.add('active');
+}
+
+function openForgotPasswordModal() {
+  const modal = document.getElementById('forgot-password-modal');
+  modal.style.display = 'flex';
+  const emailInput = document.getElementById('login-email');
+  if (emailInput && emailInput.value) {
+    document.getElementById('fp-email').value = emailInput.value.trim();
+  }
+}
+
+function closeForgotPasswordModal() {
+  document.getElementById('forgot-password-modal').style.display = 'none';
+}
+
+async function requestAccountOtp() {
+  const email = document.getElementById('fp-email').value.trim();
+  const msg = document.getElementById('fp-step-1-msg');
+  const btn = document.getElementById('btn-request-otp');
+
+  if (!email) {
+    msg.style.display = 'block';
+    msg.style.color = '#ef4444';
+    msg.textContent = 'Vui lòng nhập email.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Đang gửi mã...';
+  msg.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'forgot-password', email })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      msg.style.display = 'block';
+      msg.style.color = '#16a34a';
+      const otpCode = data.debug_otp || data.debugOtp;
+      msg.innerHTML = `✓ ${data.message} ${otpCode ? `(Mã test: <strong>${otpCode}</strong>)` : ''}`;
+      document.getElementById('fp-step-2').style.display = 'block';
+      if (otpCode) {
+        document.getElementById('fp-otp').value = otpCode;
+      }
+      btn.style.display = 'none';
+    } else {
+      msg.style.display = 'block';
+      msg.style.color = '#ef4444';
+      msg.textContent = '✗ ' + (data.message || 'Lỗi gửi yêu cầu.');
+      btn.disabled = false;
+      btn.textContent = 'Gửi mã OTP';
+    }
+  } catch(err) {
+    msg.style.display = 'block';
+    msg.style.color = '#ef4444';
+    msg.textContent = 'Lỗi kết nối máy chủ.';
+    btn.disabled = false;
+    btn.textContent = 'Gửi mã OTP';
+  }
+}
+
+async function confirmPasswordReset() {
+  const email = document.getElementById('fp-email').value.trim();
+  const otp = document.getElementById('fp-otp').value.trim();
+  const newPassword = document.getElementById('fp-new-pass').value.trim();
+  const msg = document.getElementById('fp-step-2-msg');
+  const btn = document.getElementById('btn-confirm-reset');
+
+  if (!otp || !newPassword) {
+    msg.style.display = 'block';
+    msg.style.color = '#ef4444';
+    msg.textContent = 'Vui lòng nhập mã OTP và mật khẩu mới.';
+    return;
+  }
+  if (newPassword.length < 6) {
+    msg.style.display = 'block';
+    msg.style.color = '#ef4444';
+    msg.textContent = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Đang xác thực...';
+
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reset-password', email, otp, newPassword })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      msg.style.display = 'block';
+      msg.style.color = '#16a34a';
+      msg.textContent = '✓ ' + data.message;
+      if (window.showToast) window.showToast('Đổi mật khẩu thành công! Vui lòng đăng nhập.', '🎉');
+      setTimeout(() => {
+        closeForgotPasswordModal();
+        document.getElementById('login-email').value = email;
+        document.getElementById('login-password').value = newPassword;
+      }, 1500);
+    } else {
+      msg.style.display = 'block';
+      msg.style.color = '#ef4444';
+      msg.textContent = '✗ ' + (data.message || 'Lỗi đổi mật khẩu.');
+      btn.disabled = false;
+      btn.textContent = 'Đổi mật khẩu';
+    }
+  } catch(err) {
+    msg.style.display = 'block';
+    msg.style.color = '#ef4444';
+    msg.textContent = 'Lỗi kết nối máy chủ.';
+    btn.disabled = false;
+    btn.textContent = 'Đổi mật khẩu';
+  }
 }
 </script>
 </body>

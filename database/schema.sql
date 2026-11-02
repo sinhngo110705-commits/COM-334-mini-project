@@ -85,6 +85,32 @@ CREATE TABLE IF NOT EXISTS blogs (
   content TEXT,
   image_url TEXT,
   is_active INTEGER DEFAULT 1,
+  views INTEGER DEFAULT 0,
   created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_blogs_category ON blogs(category);
+
+-- Bảng bình luận bài viết blog
+CREATE TABLE IF NOT EXISTS blog_comments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  blog_id TEXT NOT NULL,
+  user_name TEXT NOT NULL,
+  user_email TEXT,
+  content TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now')),
+  FOREIGN KEY (blog_id) REFERENCES blogs(id)
+);
+CREATE INDEX IF NOT EXISTS idx_blog_comments_blog ON blog_comments(blog_id);
+
+-- Bảng xác thực OTP quên mật khẩu (Password Resets)
+CREATE TABLE IF NOT EXISTS password_resets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL,
+  token_hash TEXT NOT NULL,
+  otp_code TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  used_at TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email);
+

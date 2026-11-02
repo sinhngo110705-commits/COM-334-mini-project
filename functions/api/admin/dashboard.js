@@ -1,6 +1,7 @@
 /* ===================================================
    API: /api/admin/dashboard - Admin Dashboard Data
-   SECURITY: Requires admin session token
+   SECURITY: Strictly requires authorized admin session token
+             (sinhngo110705, vuhoangnguyen3009)
    =================================================== */
 
 function json(data, status = 200) {
@@ -10,7 +11,14 @@ function json(data, status = 200) {
   });
 }
 
-// Helper: Verify admin token
+// Helper: Check authorized admin email (strictly sinhngo110705 and vuhoangnguyen3009)
+function isAuthorizedAdminEmail(email) {
+  if (!email) return false;
+  const e = email.toLowerCase().trim();
+  return e.includes('sinhngo110705') || e.includes('vuhoangnguyen3009');
+}
+
+// Helper: Verify admin token strictly
 async function verifyAdmin(env, request) {
   const url = new URL(request.url);
   const token = url.searchParams.get('token') || request.headers.get('Authorization')?.replace('Bearer ', '');
@@ -21,7 +29,11 @@ async function verifyAdmin(env, request) {
     'SELECT s.user_id, u.role, u.name, u.email FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND s.expires_at > datetime("now")'
   ).bind(token).first();
 
-  if (!session || (session.role !== 'admin' && session.role !== 'manager')) return null;
+  if (!session) return null;
+  // Strictly enforce admin role and authorized email
+  if (session.role !== 'admin' || !isAuthorizedAdminEmail(session.email)) {
+    return null;
+  }
   return session;
 }
 
@@ -31,7 +43,7 @@ export async function onRequestGet(context) {
 
   const admin = await verifyAdmin(env, request);
   if (!admin) {
-    return json({ ok: false, message: 'Truy cập bị từ chối. Bạn không phải admin.' }, 403);
+    return json({ ok: false, message: 'Truy cập bị từ chối. Chỉ tài khoản Admin được cấp quyền (sinhngo110705, vuhoangnguyen3009) mới có quyền truy cập.' }, 403);
   }
 
   try {
@@ -45,6 +57,7 @@ export async function onRequestGet(context) {
       const totalRevenue = await env.DB.prepare('SELECT COALESCE(SUM(total), 0) as sum FROM orders WHERE status != "cancelled"').first();
       const totalContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').first();
       const totalProducts = await env.DB.prepare('SELECT COUNT(*) as count FROM products WHERE is_active = 1').first();
+      const totalBlogs = await env.DB.prepare('SELECT COUNT(*) as count FROM blogs WHERE is_active = 1').first();
       const pendingOrders = await env.DB.prepare('SELECT COUNT(*) as count FROM orders WHERE status = "pending"').first();
       const unreadContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE is_read = 0').first();
 
@@ -60,6 +73,7 @@ export async function onRequestGet(context) {
           totalOrders: totalOrders.count,
           totalRevenue: totalRevenue.sum,
           totalProducts: totalProducts.count,
+          totalBlogs: totalBlogs ? totalBlogs.count : 0,
           totalContacts: totalContacts.count,
           pendingOrders: pendingOrders.count,
           unreadContacts: unreadContacts.count,
@@ -68,12 +82,53 @@ export async function onRequestGet(context) {
       });
     }
 
-    // ===== USERS =====
+    // ===== USERS WITH AGGREGATED STATS & ANTI-LAG PAGINATION =====
     if (section === 'users') {
-      const { results } = await env.DB.prepare(
-        'SELECT id, name, email, phone, role, created_at FROM users ORDER BY created_at DESC'
-      ).all();
-      return json({ ok: true, users: results });
+      const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+      const limitRaw = parseInt(url.searchParams.get('limit') || '10', 10);
+      // Supported limits: 10, 20, 50 (or capped at 100)
+      const limit = [10, 20, 50].includes(limitRaw) ? limitRaw : 10;
+      const search = (url.searchParams.get('search') || '').trim();
+      const offset = (page - 1) * limit;
+
+      const searchPattern = `%${search}%`;
+
+      // Total count matching search
+      const totalRow = await env.DB.prepare(
+        'SELECT COUNT(*) as count FROM users WHERE (COALESCE(name, "") LIKE ? OR COALESCE(email, "") LIKE ? OR COALESCE(phone, "") LIKE ?)'
+      ).bind(searchPattern, searchPattern, searchPattern).first();
+      const total = totalRow ? totalRow.count : 0;
+
+      // Aggregated customer query: total_orders, delivering_orders, total_spent
+      const { results } = await env.DB.prepare(`
+        SELECT 
+          u.id, 
+          u.name, 
+          u.email, 
+          u.phone, 
+          u.role, 
+          u.created_at,
+          COUNT(DISTINCT o.id) as total_orders,
+          COUNT(DISTINCT CASE WHEN o.status NOT IN ('delivered', 'cancelled') AND o.id IS NOT NULL THEN o.id END) as delivering_orders,
+          COALESCE(SUM(CASE WHEN o.status != 'cancelled' THEN o.total ELSE 0 END), 0) as total_spent
+        FROM users u
+        LEFT JOIN orders o ON (o.user_id = u.id OR (u.email IS NOT NULL AND u.email != '' AND o.customer_email = u.email))
+        WHERE (COALESCE(u.name, "") LIKE ? OR COALESCE(u.email, "") LIKE ? OR COALESCE(u.phone, "") LIKE ?)
+        GROUP BY u.id
+        ORDER BY u.created_at DESC
+        LIMIT ? OFFSET ?
+      `).bind(searchPattern, searchPattern, searchPattern, limit, offset).all();
+
+      return json({
+        ok: true,
+        users: results,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit) || 1
+        }
+      });
     }
 
     // ===== USER DETAILS =====
@@ -88,10 +143,10 @@ export async function onRequestGet(context) {
       if (!user) return json({ ok: false, message: 'Không tìm thấy user.' }, 404);
 
       const { results: orders } = await env.DB.prepare(
-        'SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC'
-      ).bind(userId).all();
+        'SELECT * FROM orders WHERE user_id = ? OR customer_email = ? ORDER BY created_at DESC'
+      ).bind(userId, user.email).all();
 
-      const parsedOrders = orders.map(o => ({ ...o, items: JSON.parse(o.items) }));
+      const parsedOrders = orders.map(o => ({ ...o, items: o.items ? JSON.parse(o.items) : [] }));
       const parsedCart = user.cart_items ? JSON.parse(user.cart_items) : [];
 
       return json({ ok: true, user, orders: parsedOrders, cart: parsedCart });
@@ -102,7 +157,7 @@ export async function onRequestGet(context) {
       const { results } = await env.DB.prepare(
         'SELECT * FROM orders ORDER BY created_at DESC'
       ).all();
-      const orders = results.map(o => ({ ...o, items: JSON.parse(o.items) }));
+      const orders = results.map(o => ({ ...o, items: o.items ? JSON.parse(o.items) : [] }));
       return json({ ok: true, orders });
     }
 
@@ -123,12 +178,51 @@ export async function onRequestGet(context) {
       return json({ ok: true, products });
     }
 
-    // ===== BLOGS =====
+    // ===== BLOGS (WITH VIEWS & COMMENT COUNT) =====
     if (section === 'blogs') {
-      const { results } = await env.DB.prepare(
-        'SELECT * FROM blogs ORDER BY created_at DESC'
-      ).all();
+      const { results } = await env.DB.prepare(`
+        SELECT 
+          b.id, b.title, b.category, b.content, b.image_url, b.is_active,
+          COALESCE(b.views, 0) as views,
+          (SELECT COUNT(*) FROM blog_comments WHERE blog_id = b.id) as comment_count,
+          b.created_at
+        FROM blogs b
+        ORDER BY b.created_at DESC
+      `).all();
       return json({ ok: true, blogs: results });
+    }
+
+    // ===== BLOG COMMENTS FOR MODERATION =====
+    if (section === 'blog_comments') {
+      const blogId = url.searchParams.get('blogId');
+      if (!blogId) return json({ ok: false, message: 'Thiếu blogId.' }, 400);
+
+      const { results } = await env.DB.prepare(
+        'SELECT id, blog_id, user_name, user_email, content, created_at FROM blog_comments WHERE blog_id = ? ORDER BY created_at DESC'
+      ).bind(blogId).all();
+
+      return json({ ok: true, comments: results });
+    }
+
+    // ===== SECURITY & BACKUP INFO =====
+    if (section === 'security_info') {
+      const { results: recentResets } = await env.DB.prepare(
+        'SELECT id, email, otp_code, expires_at, used_at, created_at FROM password_resets ORDER BY created_at DESC LIMIT 20'
+      ).all();
+
+      const userCount = await env.DB.prepare('SELECT COUNT(*) as count FROM users').first();
+      const orderCount = await env.DB.prepare('SELECT COUNT(*) as count FROM orders').first();
+      const blogCount = await env.DB.prepare('SELECT COUNT(*) as count FROM blogs').first();
+
+      return json({
+        ok: true,
+        recentResets,
+        databaseStats: {
+          users: userCount ? userCount.count : 0,
+          orders: orderCount ? orderCount.count : 0,
+          blogs: blogCount ? blogCount.count : 0,
+        }
+      });
     }
 
     return json({ ok: false, message: 'Section không hợp lệ.' }, 400);
@@ -138,13 +232,13 @@ export async function onRequestGet(context) {
   }
 }
 
-// POST /api/admin/dashboard - Admin actions (update order status, mark contact read, etc.)
+// POST /api/admin/dashboard - Admin actions
 export async function onRequestPost(context) {
   const { env, request } = context;
 
   const admin = await verifyAdmin(env, request);
   if (!admin) {
-    return json({ ok: false, message: 'Truy cập bị từ chối.' }, 403);
+    return json({ ok: false, message: 'Truy cập bị từ chối. Chỉ tài khoản Admin được cấp quyền (sinhngo110705, vuhoangnguyen3009) mới có quyền truy cập.' }, 403);
   }
 
   try {
@@ -171,12 +265,10 @@ export async function onRequestPost(context) {
       const { id, name, description, price, original_price, category, image_url, badge, tags, is_active } = product;
 
       if (id) {
-        // Update existing
         await env.DB.prepare(
           `UPDATE products SET name=?, description=?, price=?, original_price=?, category=?, image_url=?, badge=?, tags=?, is_active=? WHERE id=?`
         ).bind(name, description, price, original_price || null, category, image_url, badge || null, JSON.stringify(tags || []), is_active ?? 1, id).run();
       } else {
-        // Insert new
         const newId = 'sp_' + Date.now();
         await env.DB.prepare(
           `INSERT INTO products (id, name, description, price, original_price, category, image_url, badge, tags, is_active) VALUES (?,?,?,?,?,?,?,?,?,?)`
@@ -195,38 +287,60 @@ export async function onRequestPost(context) {
     // Add/Update Blog
     if (action === 'saveBlog') {
       const { blog } = body;
+      if (!blog || !blog.title || !blog.content) {
+        return json({ ok: false, message: 'Vui lòng nhập đầy đủ tiêu đề và nội dung bài viết.' }, 400);
+      }
       const { id, title, category, content, image_url, is_active } = blog;
 
       if (id) {
         await env.DB.prepare(
           `UPDATE blogs SET title=?, category=?, content=?, image_url=?, is_active=? WHERE id=?`
-        ).bind(title, category, content, image_url || null, is_active ?? 1, id).run();
+        ).bind(title.trim(), category || 'Dinh Dưỡng', content.trim(), image_url || null, is_active ?? 1, id).run();
       } else {
         const newId = 'blg_' + Date.now();
         await env.DB.prepare(
-          `INSERT INTO blogs (id, title, category, content, image_url, is_active) VALUES (?,?,?,?,?,?)`
-        ).bind(newId, title, category, content, image_url || null, is_active ?? 1).run();
+          `INSERT INTO blogs (id, title, category, content, image_url, is_active, views) VALUES (?,?,?,?,?,?,0)`
+        ).bind(newId, title.trim(), category || 'Dinh Dưỡng', content.trim(), image_url || null, is_active ?? 1).run();
       }
-      return json({ ok: true });
+      return json({ ok: true, message: 'Lưu bài viết thành công.' });
     }
 
     // Delete Blog
     if (action === 'deleteBlog') {
       const { blogId } = body;
-      await env.DB.prepare('UPDATE blogs SET is_active = 0 WHERE id = ?').bind(blogId).run();
-      return json({ ok: true });
+      if (!blogId) return json({ ok: false, message: 'Thiếu blogId.' }, 400);
+      // Also delete comments
+      await env.DB.prepare('DELETE FROM blog_comments WHERE blog_id = ?').bind(blogId).run();
+      await env.DB.prepare('DELETE FROM blogs WHERE id = ?').bind(blogId).run();
+      return json({ ok: true, message: 'Đã xóa bài viết và toàn bộ bình luận liên quan.' });
     }
 
-    // Change user role (Admin only)
+    // Delete Blog Comment (Moderation)
+    if (action === 'deleteBlogComment') {
+      const { commentId } = body;
+      if (!commentId) return json({ ok: false, message: 'Thiếu commentId.' }, 400);
+      await env.DB.prepare('DELETE FROM blog_comments WHERE id = ?').bind(commentId).run();
+      return json({ ok: true, message: 'Đã xóa bình luận.' });
+    }
+
+    // Change user role (Strictly Admin only, only allow admin role for sinhngo110705 or vuhoangnguyen3009)
     if (action === 'changeUserRole') {
-      if (admin.role !== 'admin') {
-        return json({ ok: false, message: 'Chỉ Admin mới có quyền đổi vai trò.' }, 403);
-      }
       const { userId, newRole } = body;
       if (!['user', 'manager', 'admin'].includes(newRole)) return json({ ok: false, message: 'Vai trò không hợp lệ.' }, 400);
-      
-      // Prevent demoting the last admin if needed, or prevent changing own role?
-      if (admin.user_id === userId) return json({ ok: false, message: 'Bạn không thể tự đổi vai trò của chính mình.' }, 400);
+
+      const targetUser = await env.DB.prepare('SELECT id, email, role FROM users WHERE id = ?').bind(userId).first();
+      if (!targetUser) return json({ ok: false, message: 'Không tìm thấy user.' }, 404);
+
+      if (newRole === 'admin' && !isAuthorizedAdminEmail(targetUser.email)) {
+        return json({
+          ok: false,
+          message: 'Chỉ tài khoản có email sinhngo110705 hoặc vuhoangnguyen3009 mới có thể nhận quyền Admin.'
+        }, 403);
+      }
+
+      if (admin.user_id === userId && newRole !== 'admin') {
+        return json({ ok: false, message: 'Bạn không thể tự hạ quyền của chính mình.' }, 400);
+      }
 
       await env.DB.prepare('UPDATE users SET role = ? WHERE id = ?').bind(newRole, userId).run();
       return json({ ok: true, message: 'Cập nhật vai trò thành công.' });
@@ -237,10 +351,11 @@ export async function onRequestPost(context) {
       const { userId } = body;
       if (!userId) return json({ ok: false, message: 'Thiếu userId.' }, 400);
 
-      // Prevent deleting admin accounts
-      const targetUser = await env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(userId).first();
+      const targetUser = await env.DB.prepare('SELECT role, email FROM users WHERE id = ?').bind(userId).first();
       if (!targetUser) return json({ ok: false, message: 'Không tìm thấy user.' }, 404);
-      if (targetUser.role === 'admin') return json({ ok: false, message: 'Không thể xóa tài khoản admin.' }, 403);
+      if (targetUser.role === 'admin' || isAuthorizedAdminEmail(targetUser.email)) {
+        return json({ ok: false, message: 'Không thể xóa tài khoản Admin.' }, 403);
+      }
 
       // Cascade delete
       await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(userId).run();
@@ -257,9 +372,34 @@ export async function onRequestPost(context) {
       return json({ ok: true, message: 'Đã xóa đơn hàng.' });
     }
 
+    // Export database backup snapshot as JSON
+    if (action === 'exportBackup') {
+      const { results: users } = await env.DB.prepare('SELECT id, name, email, phone, role, created_at FROM users').all();
+      const { results: orders } = await env.DB.prepare('SELECT * FROM orders').all();
+      const { results: blogs } = await env.DB.prepare('SELECT * FROM blogs').all();
+      const { results: comments } = await env.DB.prepare('SELECT * FROM blog_comments').all();
+      const { results: products } = await env.DB.prepare('SELECT * FROM products').all();
+      const { results: contacts } = await env.DB.prepare('SELECT * FROM contacts').all();
+
+      return json({
+        ok: true,
+        backup: {
+          exportedAt: new Date().toISOString(),
+          system: 'Sữa Hạt Dana Admin Backup',
+          users,
+          orders,
+          blogs,
+          comments,
+          products,
+          contacts
+        }
+      });
+    }
+
     return json({ ok: false, message: 'Action không hợp lệ.' }, 400);
 
   } catch (err) {
     return json({ ok: false, message: err.message }, 500);
   }
 }
+

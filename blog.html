@@ -74,6 +74,12 @@
 <script src="assets/js/account.js"></script>
 <script>
 let blogsCache = {};
+let currentBlogComments = [];
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -94,7 +100,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     data.blogs.forEach((b, i) => {
       blogsCache[b.id] = b;
       const d = new Date(b.created_at);
-      const meta = d.toLocaleDateString('vi-VN') + ' · ' + (Math.floor(Math.random() * 5) + 3) + ' phút đọc';
+      const views = b.views || 0;
+      const commentsCount = b.comment_count || 0;
+      const meta = `${d.toLocaleDateString('vi-VN')} · ${Math.floor(Math.random() * 3) + 3} phút đọc · 👁️ ${views} lượt xem · 💬 ${commentsCount} bình luận`;
       const snippet = (b.content || '').replace(/<[^>]+>/g, '').substring(0, 150) + '...';
       const catClass = (b.category || 'all').toLowerCase().replace(/ /g, '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       const img = b.image_url || 'assets/images/logo.jpeg';
@@ -102,22 +110,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (i === 0) {
         featContainer.innerHTML = '<div class="blog-card" style="flex-direction:row;display:flex;margin-bottom:48px;border-radius:var(--radius-xl);overflow:hidden;box-shadow:var(--shadow-lg);opacity:1;transform:none" data-category="' + catClass + '">' +
           '<div style="flex:1;height:360px;overflow:hidden">' +
-            '<img src="' + img + '" alt="' + b.title + '" style="width:100%;height:100%;object-fit:cover;transition:transform 0.6s ease" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'" />' +
+            '<img src="' + img + '" alt="' + escapeHtml(b.title) + '" style="width:100%;height:100%;object-fit:cover;transition:transform 0.6s ease" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'" />' +
           '</div>' +
           '<div class="blog-card-body" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px">' +
-            '<span class="blog-card-cat" style="position:static;display:inline-block;width:fit-content;margin-bottom:12px">' + b.category + ' · Nổi bật</span>' +
-            '<p class="blog-meta">' + meta + '</p>' +
-            '<h3 style="margin-bottom:16px">' + b.title + '</h3>' +
+            '<span class="blog-card-cat" style="position:static;display:inline-block;width:fit-content;margin-bottom:12px">' + escapeHtml(b.category) + ' · Nổi bật</span>' +
+            '<p class="blog-meta" id="blog-meta-' + b.id + '">' + meta + '</p>' +
+            '<h3 style="margin-bottom:16px">' + escapeHtml(b.title) + '</h3>' +
             '<p style="color:var(--gray);line-height:1.8;margin-bottom:24px">' + snippet + '</p>' +
             '<a href="#' + b.id + '" class="read-more" onclick="openBlogDetail(\'' + b.id + '\');return false;">Đọc bài viết <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>' +
           '</div>' +
         '</div>';
       } else {
         gridContainer.innerHTML += '<a href="#' + b.id + '" class="blog-card" data-category="' + catClass + '" onclick="openBlogDetail(\'' + b.id + '\');return false;">' +
-          '<div class="blog-card-img"><img src="' + img + '" alt="' + b.title + '" /><span class="blog-card-cat">' + b.category + '</span></div>' +
+          '<div class="blog-card-img"><img src="' + img + '" alt="' + escapeHtml(b.title) + '" /><span class="blog-card-cat">' + escapeHtml(b.category) + '</span></div>' +
           '<div class="blog-card-body">' +
-            '<p class="blog-meta">' + meta + '</p>' +
-            '<h4>' + b.title + '</h4>' +
+            '<p class="blog-meta" id="blog-meta-' + b.id + '">' + meta + '</p>' +
+            '<h4>' + escapeHtml(b.title) + '</h4>' +
             '<p>' + snippet.substring(0, 80) + '...</p>' +
             '<span class="read-more">Đọc thêm <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>' +
           '</div>' +
@@ -125,7 +133,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    // Explicitly reveal all blog cards by adding the 'revealed' class and forcing opacity
     if (gridContainer) gridContainer.classList.add('revealed');
     document.querySelectorAll('.blog-card').forEach(function(card) {
        card.style.opacity = '1';
@@ -156,20 +163,224 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-function openBlogDetail(id) {
+async function openBlogDetail(id) {
   var blog = blogsCache[id];
   if (!blog) return;
+  
+  // 1. Fire view count update in background
+  fetch('/api/blogs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'view', blogId: id })
+  }).then(r => r.json()).then(data => {
+    if (data.ok && typeof data.views === 'number') {
+      blog.views = data.views;
+      const viewBadge = document.getElementById('blog-views-badge');
+      if (viewBadge) viewBadge.textContent = `👁️ ${data.views} lượt xem`;
+      const metaEl = document.getElementById(`blog-meta-${id}`);
+      if (metaEl) {
+        const d = new Date(blog.created_at);
+        metaEl.textContent = `${d.toLocaleDateString('vi-VN')} · 5 phút đọc · 👁️ ${data.views} lượt xem · 💬 ${blog.comment_count || 0} bình luận`;
+      }
+    }
+  }).catch(() => {});
+
+  // 2. Fetch Logged-in user if available for pre-filling comment form
+  let currentUser = null;
+  try {
+    currentUser = JSON.parse(localStorage.getItem('dana_user'));
+  } catch(e) {}
+
   var el = document.getElementById('blog-detail-content');
   var d = new Date(blog.created_at);
-  var meta = d.toLocaleDateString('vi-VN');
-  
-  el.innerHTML = '<span style="display:inline-block;background:var(--sage);color:#fff;padding:4px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;margin-bottom:12px">' + (blog.category || 'Chung') + '</span>' +
-    '<p style="color:var(--gray);font-size:0.85rem;margin-bottom:24px">' + meta + '</p>' +
-    '<h2 style="font-size:1.6rem;margin-bottom:24px;color:var(--dark)">' + blog.title + '</h2>' +
-    '<div>' + blog.content + '</div>';
+  var metaDate = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  var coverHtml = blog.image_url ? `<div style="margin:20px 0 28px;border-radius:14px;overflow:hidden;max-height:380px"><img src="${blog.image_url}" alt="${escapeHtml(blog.title)}" style="width:100%;height:100%;object-fit:cover" /></div>` : '';
+
+  // 3. Render Article & Place Comments Section EXCLUSIVELY at the bottom of the article
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <span style="background:var(--sage);color:#fff;padding:4px 14px;border-radius:20px;font-size:0.8rem;font-weight:600">${escapeHtml(blog.category || 'Dinh Dưỡng')}</span>
+      <span style="color:var(--gray);font-size:0.85rem">📅 ${metaDate}</span>
+      <span id="blog-views-badge" style="background:rgba(56,189,248,0.12);color:#0284c7;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600">👁️ ${(blog.views || 0) + 1} lượt xem</span>
+      <span id="blog-comments-badge-top" style="background:rgba(107,143,113,0.12);color:var(--sage);padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600">💬 ${blog.comment_count || 0} bình luận</span>
+    </div>
+
+    <h1 style="font-size:1.85rem;margin-bottom:20px;color:var(--dark);line-height:1.4">${escapeHtml(blog.title)}</h1>
+    ${coverHtml}
+    <div style="font-size:1.05rem;line-height:1.9;color:#334155;margin-bottom:48px">${blog.content}</div>
+
+    <!-- ========================================================
+         COMMENTS SECTION (EXCLUSIVELY AT THE BOTTOM OF THE POST)
+         ======================================================== -->
+    <div id="blog-comments-section" style="margin-top:40px;padding-top:36px;border-top:2px solid #e2e8f0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <h3 style="font-size:1.35rem;color:var(--dark);display:flex;align-items:center;gap:10px;margin:0">
+          <span>💬 Bình Luận &amp; Thảo Luận</span>
+          <span id="comment-count-badge" style="font-size:0.85rem;background:rgba(107,143,113,0.15);color:var(--sage);padding:4px 12px;border-radius:20px;font-weight:700">0</span>
+        </h3>
+        <small style="color:#64748b">Tất cả bình luận đều tuân thủ chuẩn mực cộng đồng Dana</small>
+      </div>
+
+      <!-- Add Comment Form -->
+      <div style="background:var(--cream);border-radius:16px;padding:24px;margin-bottom:32px;border:1px solid rgba(107,143,113,0.2)">
+        <h4 style="font-size:1rem;margin-bottom:14px;color:var(--dark);font-weight:600">✍️ Để lại bình luận của bạn</h4>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:14px">
+          <div>
+            <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:6px;color:var(--dark)">Họ và tên <span style="color:#ef4444">*</span></label>
+            <input type="text" id="comment-name" class="form-control" placeholder="Nguyễn Văn A" value="${currentUser ? escapeHtml(currentUser.name) : ''}" style="width:100%;background:#fff;border:1px solid #cbd5e1;padding:10px 14px;border-radius:8px" />
+          </div>
+          <div>
+            <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:6px;color:var(--dark)">Email (Bảo mật, không công khai)</label>
+            <input type="email" id="comment-email" class="form-control" placeholder="email@vidu.com" value="${currentUser ? escapeHtml(currentUser.email) : ''}" style="width:100%;background:#fff;border:1px solid #cbd5e1;padding:10px 14px;border-radius:8px" />
+          </div>
+        </div>
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:6px;color:var(--dark)">Nội dung bình luận <span style="color:#ef4444">*</span></label>
+          <textarea id="comment-content" class="form-control" rows="3" placeholder="Chia sẻ suy nghĩ, thắc mắc hoặc cảm nhận của bạn về bài viết..." style="width:100%;background:#fff;border:1px solid #cbd5e1;padding:12px 14px;border-radius:8px;resize:vertical"></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end">
+          <button type="button" id="btn-submit-comment" class="btn btn-primary" onclick="submitBlogComment('${id}')" style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:10px;font-weight:600;cursor:pointer">
+            <span>Gửi bình luận</span>
+            <svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Comment List Container -->
+      <div id="blog-comments-list" style="display:flex;flex-direction:column;gap:16px">
+        <div style="text-align:center;padding:24px;color:#94a3b8">Đang tải bình luận...</div>
+      </div>
+    </div>
+  `;
+
   document.getElementById('blog-detail-overlay').style.display = 'block';
   document.body.style.overflow = 'hidden';
+
+  // 4. Load comments for this specific blog
+  loadBlogComments(id);
 }
+
+async function loadBlogComments(blogId) {
+  try {
+    const res = await fetch(`/api/blogs?action=comments&blogId=${blogId}`);
+    const data = await res.json();
+    const comments = (data.ok && data.comments) ? data.comments : [];
+    currentBlogComments = comments;
+
+    // Update count badges
+    const badge = document.getElementById('comment-count-badge');
+    if (badge) badge.textContent = comments.length;
+    const topBadge = document.getElementById('blog-comments-badge-top');
+    if (topBadge) topBadge.textContent = `💬 ${comments.length} bình luận`;
+
+    // Render list
+    renderCommentsList(comments);
+  } catch(err) {
+    const container = document.getElementById('blog-comments-list');
+    if (container) container.innerHTML = '<div style="text-align:center;color:#ef4444;padding:20px">Không thể tải danh sách bình luận.</div>';
+  }
+}
+
+function renderCommentsList(comments) {
+  const container = document.getElementById('blog-comments-list');
+  if (!container) return;
+
+  if (!comments || comments.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:36px 20px;background:#f8fafc;border-radius:14px;border:1px dashed #cbd5e1;color:var(--gray)">
+        <div style="font-size:2.2rem;margin-bottom:8px">🌿</div>
+        <p style="margin:0;font-size:1rem;font-weight:600;color:var(--dark)">Chưa có bình luận nào cho bài viết này</p>
+        <p style="margin:6px 0 0;font-size:0.85rem;color:#94a3b8">Hãy là người đầu tiên để lại ý kiến đóng góp của bạn!</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = comments.map(c => {
+    const initial = (c.user_name || 'U').charAt(0).toUpperCase();
+    const dateStr = new Date(c.created_at).toLocaleDateString('vi-VN', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+    return `
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start">
+        <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--sage),#3d5c41);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.08)">
+          ${initial}
+        </div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+            <h5 style="margin:0;font-size:0.95rem;color:var(--dark);font-weight:700">${escapeHtml(c.user_name)}</h5>
+            <span style="font-size:0.78rem;color:#94a3b8">🕒 ${dateStr}</span>
+          </div>
+          <p style="margin:0;font-size:0.92rem;line-height:1.7;color:#334155">${escapeHtml(c.content)}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function submitBlogComment(blogId) {
+  const btn = document.getElementById('btn-submit-comment');
+  if (btn && btn.disabled) return;
+
+  const nameEl = document.getElementById('comment-name');
+  const emailEl = document.getElementById('comment-email');
+  const contentEl = document.getElementById('comment-content');
+
+  const name = nameEl.value.trim();
+  const email = emailEl.value.trim();
+  const content = contentEl.value.trim();
+
+  if (!name || !content) {
+    if (window.showToast) window.showToast('Vui lòng nhập họ tên và nội dung bình luận.', '⚠️');
+    else alert('Vui lòng nhập họ tên và nội dung bình luận.');
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    btn.innerHTML = '<span>Đang gửi...</span>';
+  }
+
+  try {
+    const res = await fetch('/api/blogs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'comment', blogId, name, email, content })
+    });
+    const data = await res.json();
+    if (data.ok && data.comment) {
+      if (window.showToast) window.showToast('Bình luận của bạn đã được gửi thành công! 🌿', '✅');
+      contentEl.value = '';
+      
+      // Update cache
+      if (blogsCache[blogId]) {
+        blogsCache[blogId].comment_count = (blogsCache[blogId].comment_count || 0) + 1;
+        const metaEl = document.getElementById(`blog-meta-${blogId}`);
+        if (metaEl) {
+          const d = new Date(blogsCache[blogId].created_at);
+          metaEl.textContent = `${d.toLocaleDateString('vi-VN')} · 5 phút đọc · 👁️ ${blogsCache[blogId].views || 0} lượt xem · 💬 ${blogsCache[blogId].comment_count} bình luận`;
+        }
+      }
+      
+      // Refresh comments
+      loadBlogComments(blogId);
+    } else {
+      if (window.showToast) window.showToast(data.message || 'Không thể gửi bình luận.', '❌');
+      else alert(data.message || 'Không thể gửi bình luận.');
+    }
+  } catch(err) {
+    if (window.showToast) window.showToast('Lỗi kết nối máy chủ.', '❌');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.innerHTML = '<span>Gửi bình luận</span> <svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+    }
+  }
+}
+
 function closeBlogDetail() {
   document.getElementById('blog-detail-overlay').style.display = 'none';
   document.body.style.overflow = '';

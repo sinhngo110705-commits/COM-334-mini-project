@@ -3,11 +3,12 @@
 -- Chạy file này SAU KHI đã chạy schema.sql
 -- ===================================================
 
--- Tạo tài khoản Admin mặc định
+-- Tạo tài khoản Admin mặc định (sinhngo110705 và vuhoangnguyen3009)
 -- Password: DanaAdmin@2026 (SHA-256 hashed)
--- QUAN TRỌNG: Đổi mật khẩu này ngay sau khi đăng nhập lần đầu!
 INSERT OR IGNORE INTO users (id, name, email, password_hash, phone, role) VALUES
-('admin_001', 'Admin Dana', 'admin@hnguyenworks.id.vn', 'ea554d403eec8485c738aa8ec19bf7a6f5bd229b4b1d0f089a1eae749aff2115', '0974445624', 'admin');
+('admin_001', 'Admin Dana (Legacy User)', 'admin@hnguyenworks.id.vn', 'ea554d403eec8485c738aa8ec19bf7a6f5bd229b4b1d0f089a1eae749aff2115', '0974445624', 'user'),
+('admin_sinhngo', 'Sinh Ngô Admin', 'sinhngo110705@gmail.com', 'ea554d403eec8485c738aa8ec19bf7a6f5bd229b4b1d0f089a1eae749aff2115', '0974445624', 'admin'),
+('admin_vuhoangnguyen', 'Vũ Hoàng Nguyên Admin', 'vuhoangnguyen3009@gmail.com', 'ea554d403eec8485c738aa8ec19bf7a6f5bd229b4b1d0f089a1eae749aff2115', '0901234567', 'admin');
 
 -- Sản phẩm mẫu (6 sản phẩm)
 INSERT OR IGNORE INTO products (id, name, description, price, original_price, category, image_url, badge, tags) VALUES
