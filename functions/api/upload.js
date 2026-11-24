@@ -1,3 +1,5 @@
+import { canBeAdmin } from '../admin-access.js';
+
 /* ===================================================
    API: /api/upload - Upload images to R2
    =================================================== */
@@ -7,13 +9,6 @@ function json(data, status = 200) {
     status,
     headers: { 'Content-Type': 'application/json' }
   });
-}
-
-// Helper: Check authorized admin email
-function isAuthorizedAdminEmail(email) {
-  if (!email) return false;
-  const e = email.toLowerCase().trim();
-  return e.includes('sinhngo110705') || e.includes('vuhoangnguyen3009');
 }
 
 // POST /api/upload - Upload image file to R2
@@ -71,11 +66,11 @@ export async function onRequestPost(context) {
 
     // Verify admin token strictly
     const session = await env.DB.prepare(
-      'SELECT s.user_id, u.role, u.email FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND s.expires_at > datetime("now")'
+      'SELECT s.user_id, u.role, u.email FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND julianday(s.expires_at) > julianday("now")'
     ).bind(token).first();
 
-    if (!session || session.role !== 'admin' || !isAuthorizedAdminEmail(session.email)) {
-      return json({ ok: false, message: 'Chỉ tài khoản Admin được cấp quyền (sinhngo110705, vuhoangnguyen3009) mới có quyền upload.' }, 403);
+    if (!session || session.role !== 'admin' || !canBeAdmin(session)) {
+      return json({ ok: false, message: 'Cần quyền quản trị để tải ảnh lên.' }, 403);
     }
 
     // Validate file presence

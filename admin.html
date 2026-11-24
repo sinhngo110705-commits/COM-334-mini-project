@@ -685,13 +685,6 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-// Helper: Check authorized admin email (strictly sinhngo110705 and vuhoangnguyen3009)
-function isAuthorizedAdminEmail(email) {
-  if (!email) return false;
-  const e = email.toLowerCase().trim();
-  return e.includes('sinhngo110705') || e.includes('vuhoangnguyen3009');
-}
-
 // =================== LOGIN ===================
 document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -715,8 +708,8 @@ document.getElementById('admin-login-form').addEventListener('submit', async (e)
     }
 
     // Check if user is authorized admin
-    if (data.user.role !== 'admin' || !isAuthorizedAdminEmail(data.user.email)) {
-      errorEl.textContent = 'Truy cập bị từ chối: Chỉ tài khoản Admin được cấp quyền (sinhngo110705, vuhoangnguyen3009) mới có quyền truy cập.';
+    if (data.user.role !== 'admin') {
+      errorEl.textContent = 'Tài khoản này chưa có quyền quản trị.';
       errorEl.style.display = 'block';
       await fetch(`${API_BASE}/auth`, {
         method: 'POST',
@@ -748,7 +741,7 @@ async function checkSession() {
     });
     const data = await res.json();
 
-    if (data.ok && data.user.role === 'admin' && isAuthorizedAdminEmail(data.user.email)) {
+    if (data.ok && data.user.role === 'admin') {
       showDashboard(data.user);
     } else {
       adminToken = null;
@@ -963,7 +956,7 @@ function renderUsers(users, pagination) {
       ? `<span class="status-badge" style="background:rgba(56,189,248,0.18);color:#38bdf8;font-weight:700">⚡ ${u.delivering_orders} đơn</span>`
       : `<span style="color:#64748b;font-size:0.85rem">0</span>`;
 
-    // Dropdown for changing roles (Admin only, only allow admin role for sinhngo110705 or vuhoangnguyen3009)
+    // The dashboard API validates changes to account roles.
     const currentAdminId = adminData ? (adminData.id || adminData.user_id) : null;
     const selectHtml = (adminData && adminData.role === 'admin' && currentAdminId !== u.id && u.role !== 'admin') ? `
       <select data-user-action="role" style="background:transparent;color:#cbd5e1;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 8px;font-size:0.75rem;margin-left:8px">

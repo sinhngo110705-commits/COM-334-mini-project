@@ -1,5 +1,6 @@
 import { normalizeBlog } from '../../blog-record.js';
 import { safeUrl } from '../../../assets/js/site-content.js';
+import { canBeAdmin, isDanaAdminAccount, isSeedPasswordHash } from '../../admin-access.js';
 
 const DEMO_ORDER_ID = 'ORD_usr_[0-9][0-9]_[0-9]*';
 const CUSTOMER_ORDER_MATCH = `(
@@ -10,8 +11,7 @@ const CUSTOMER_ORDER_MATCH = `(
 
 /* ===================================================
    API: /api/admin/dashboard - Admin Dashboard Data
-   SECURITY: Strictly requires authorized admin session token
-             (sinhngo110705, vuhoangnguyen3009)
+   SECURITY: Requires an authorized admin session token
    =================================================== */
 
 function json(data, status = 200) {
@@ -19,13 +19,6 @@ function json(data, status = 200) {
     status,
     headers: { 'Content-Type': 'application/json' }
   });
-}
-
-// Helper: Check authorized admin email (strictly sinhngo110705 and vuhoangnguyen3009)
-function isAuthorizedAdminEmail(email) {
-  if (!email) return false;
-  const e = email.toLowerCase().trim();
-  return e.includes('sinhngo110705') || e.includes('vuhoangnguyen3009');
 }
 
 // Helper: Verify admin token strictly
@@ -36,12 +29,12 @@ async function verifyAdmin(env, request) {
   if (!token) return null;
 
   const session = await env.DB.prepare(
-    'SELECT s.user_id, u.role, u.name, u.email FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND s.expires_at > datetime("now")'
+    'SELECT s.user_id, u.role, u.name, u.email FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND julianday(s.expires_at) > julianday("now")'
   ).bind(token).first();
 
   if (!session) return null;
   // Strictly enforce admin role and authorized email
-  if (session.role !== 'admin' || !isAuthorizedAdminEmail(session.email)) {
+  if (session.role !== 'admin' || !canBeAdmin(session)) {
     return null;
   }
   return session;
@@ -53,7 +46,7 @@ export async function onRequestGet(context) {
 
   const admin = await verifyAdmin(env, request);
   if (!admin) {
-    return json({ ok: false, message: 'Truy cập bị từ chối. Chỉ tài khoản Admin được cấp quyền (sinhngo110705, vuhoangnguyen3009) mới có quyền truy cập.' }, 403);
+    return json({ ok: false, message: 'Tài khoản này chưa có quyền quản trị.' }, 403);
   }
 
   try {
@@ -244,7 +237,7 @@ export async function onRequestPost(context) {
 
   const admin = await verifyAdmin(env, request);
   if (!admin) {
-    return json({ ok: false, message: 'Truy cập bị từ chối. Chỉ tài khoản Admin được cấp quyền (sinhngo110705, vuhoangnguyen3009) mới có quyền truy cập.' }, 403);
+    return json({ ok: false, message: 'Tài khoản này chưa có quyền quản trị.' }, 403);
   }
 
   try {
@@ -343,19 +336,22 @@ export async function onRequestPost(context) {
       return json({ ok: true, message: 'Đã xóa bình luận.' });
     }
 
-    // Change user role (Strictly Admin only, only allow admin role for sinhngo110705 or vuhoangnguyen3009)
+    // Change the role of a user approved for admin access.
     if (action === 'changeUserRole') {
       const { userId, newRole } = body;
       if (!['user', 'manager', 'admin'].includes(newRole)) return json({ ok: false, message: 'Vai trò không hợp lệ.' }, 400);
 
-      const targetUser = await env.DB.prepare('SELECT id, email, role FROM users WHERE id = ?').bind(userId).first();
+      const targetUser = await env.DB.prepare('SELECT id, email, role, password_hash FROM users WHERE id = ?').bind(userId).first();
       if (!targetUser) return json({ ok: false, message: 'Không tìm thấy user.' }, 404);
 
-      if (newRole === 'admin' && !isAuthorizedAdminEmail(targetUser.email)) {
+      if (newRole === 'admin' && !canBeAdmin(targetUser)) {
         return json({
           ok: false,
-          message: 'Chỉ tài khoản có email sinhngo110705 hoặc vuhoangnguyen3009 mới có thể nhận quyền Admin.'
+          message: 'Tài khoản này chưa được phép nhận quyền Admin.'
         }, 403);
+      }
+      if (newRole === 'admin' && isDanaAdminAccount(targetUser) && isSeedPasswordHash(targetUser.password_hash)) {
+        return json({ ok: false, message: 'Tài khoản cần mật khẩu riêng trước khi nhận quyền Admin.' }, 409);
       }
 
       if (admin.user_id === userId && newRole !== 'admin') {
@@ -371,9 +367,9 @@ export async function onRequestPost(context) {
       const { userId } = body;
       if (!userId) return json({ ok: false, message: 'Thiếu userId.' }, 400);
 
-      const targetUser = await env.DB.prepare('SELECT role, email FROM users WHERE id = ?').bind(userId).first();
+      const targetUser = await env.DB.prepare('SELECT id, role, email FROM users WHERE id = ?').bind(userId).first();
       if (!targetUser) return json({ ok: false, message: 'Không tìm thấy user.' }, 404);
-      if (targetUser.role === 'admin' || isAuthorizedAdminEmail(targetUser.email)) {
+      if (targetUser.role === 'admin' || canBeAdmin(targetUser)) {
         return json({ ok: false, message: 'Không thể xóa tài khoản Admin.' }, 403);
       }
 

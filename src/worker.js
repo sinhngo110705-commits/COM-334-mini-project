@@ -16,6 +16,7 @@ import { generateSitemapXml, generateRobotsTxt } from '../functions/api/sitemap.
 import { detailPath } from '../assets/js/site-content.js';
 import { serveDetail } from './detail-pages.js';
 import { ensureOrderFeedback } from '../functions/order-feedback.js';
+import { DANA_ADMIN_EMAIL, DANA_ADMIN_ID } from '../functions/admin-access.js';
 
 // CORS headers
 const CORS = {
@@ -80,8 +81,10 @@ async function runMigrations(env) {
     )`).run();
     await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)`).run();
 
-    // 4. Update admin roles: strictly enforce admin role ONLY for sinhngo110705 and vuhoangnguyen3009
-    await env.DB.prepare(`UPDATE users SET role = 'user' WHERE email NOT LIKE '%sinhngo110705%' AND email NOT LIKE '%vuhoangnguyen3009%' AND role = 'admin'`).run();
+    // 4. Preserve approved admin roles. Admin Dana is provisioned separately.
+    await env.DB.prepare(`UPDATE users SET role = 'user'
+      WHERE role = 'admin' AND email NOT LIKE '%sinhngo110705%' AND email NOT LIKE '%vuhoangnguyen3009%'
+        AND NOT (id = ? AND lower(trim(email)) = ?)`).bind(DANA_ADMIN_ID, DANA_ADMIN_EMAIL).run();
     
     const sinhExisting = await env.DB.prepare(`SELECT id FROM users WHERE email LIKE '%sinhngo110705%'`).first();
     if (sinhExisting) {

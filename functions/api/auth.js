@@ -1,3 +1,5 @@
+import { canBeAdmin, isDanaAdminAccount, isDanaAdminEmail, isLegacyAdminEmail, isSeedPasswordHash } from '../admin-access.js';
+
 /* ===================================================
    API: /api/auth - Authentication (Register, Login, Logout)
    Security: SHA-256 password hashing via Web Crypto API
@@ -27,13 +29,6 @@ function json(data, status = 200) {
   });
 }
 
-// Helper: Check authorized admin email (strictly sinhngo110705 and vuhoangnguyen3009)
-export function isAuthorizedAdminEmail(email) {
-  if (!email) return false;
-  const e = email.toLowerCase().trim();
-  return e.includes('sinhngo110705') || e.includes('vuhoangnguyen3009');
-}
-
 // POST /api/auth - Handle login, register, logout, forgot-password, reset-password
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -60,7 +55,7 @@ export async function onRequestPost(context) {
 
       const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
       const passwordHash = await hashPassword(password);
-      const role = isAuthorizedAdminEmail(email) ? 'admin' : 'user';
+      const role = isLegacyAdminEmail(email) ? 'admin' : 'user';
 
       await env.DB.prepare(
         'INSERT INTO users (id, name, email, password_hash, phone, role) VALUES (?, ?, ?, ?, ?, ?)'
@@ -98,7 +93,7 @@ export async function onRequestPost(context) {
 
       // If user provided DanaAdmin@2026 for an authorized admin email, ensure password hash and role are synced
       const validHashes = ['8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'ea554d403eec8485c738aa8ec19bf7a6f5bd229b4b1d0f089a1eae749aff2115'];
-      if (!user && isAuthorizedAdminEmail(emailInput) && validHashes.includes(passwordHash)) {
+      if (!user && isLegacyAdminEmail(emailInput) && validHashes.includes(passwordHash)) {
         const existingAdmin = await env.DB.prepare('SELECT id, name, email, phone FROM users WHERE email = ? OR email = ?').bind(emailInput, emailAlt).first();
         if (existingAdmin) {
           await env.DB.prepare('UPDATE users SET password_hash = ?, role = "admin" WHERE id = ?').bind(passwordHash, existingAdmin.id).run();
@@ -116,14 +111,17 @@ export async function onRequestPost(context) {
       if (!user) {
         return json({ ok: false, message: 'Email hoặc mật khẩu không đúng.' }, 401);
       }
+      if (isDanaAdminAccount(user) && user.role === 'admin' && isSeedPasswordHash(passwordHash)) {
+        return json({ ok: false, message: 'Tài khoản quản trị cần mật khẩu riêng.' }, 401);
+      }
 
       // Strictly enforce admin role: only authorized emails can be admin
-      if (isAuthorizedAdminEmail(user.email)) {
+      if (isLegacyAdminEmail(user.email)) {
         if (user.role !== 'admin') {
           await env.DB.prepare('UPDATE users SET role = "admin" WHERE id = ?').bind(user.id).run();
           user.role = 'admin';
         }
-      } else if (user.role === 'admin') {
+      } else if (user.role === 'admin' && !canBeAdmin(user)) {
         await env.DB.prepare('UPDATE users SET role = "user" WHERE id = ?').bind(user.id).run();
         user.role = 'user';
       }
@@ -171,12 +169,12 @@ export async function onRequestPost(context) {
 
       // Strictly enforce admin role for session
       let userRole = session.role;
-      if (isAuthorizedAdminEmail(session.email)) {
+      if (isLegacyAdminEmail(session.email)) {
         if (userRole !== 'admin') {
           await env.DB.prepare('UPDATE users SET role = "admin" WHERE id = ?').bind(session.id).run();
           userRole = 'admin';
         }
-      } else if (userRole === 'admin') {
+      } else if (userRole === 'admin' && !canBeAdmin(session)) {
         await env.DB.prepare('UPDATE users SET role = "user" WHERE id = ?').bind(session.id).run();
         userRole = 'user';
       }
@@ -191,6 +189,9 @@ export async function onRequestPost(context) {
     if (action === 'forgot-password') {
       const { email } = body;
       if (!email) return json({ ok: false, message: 'Vui lòng nhập địa chỉ email.' }, 400);
+      if (isDanaAdminEmail(email)) {
+        return json({ ok: false, message: 'Tài khoản quản trị này có quy trình khôi phục riêng.' }, 403);
+      }
 
       const user = await env.DB.prepare('SELECT id, name, email FROM users WHERE email = ?').bind(email.trim()).first();
       if (!user) {
@@ -224,6 +225,9 @@ export async function onRequestPost(context) {
       const { email, otp, newPassword } = body;
       if (!email || !otp || !newPassword) {
         return json({ ok: false, message: 'Vui lòng điền đầy đủ email, mã OTP và mật khẩu mới.' }, 400);
+      }
+      if (isDanaAdminEmail(email)) {
+        return json({ ok: false, message: 'Tài khoản quản trị này có quy trình khôi phục riêng.' }, 403);
       }
       if (newPassword.length < 6) {
         return json({ ok: false, message: 'Mật khẩu mới phải có ít nhất 6 ký tự.' }, 400);
