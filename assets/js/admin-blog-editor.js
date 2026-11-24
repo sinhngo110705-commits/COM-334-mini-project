@@ -1,4 +1,4 @@
-import { renderBlogContent } from './blog-content.js';
+import { BLOG_FONTS, BLOG_FONT_SIZES, blogFontName, renderBlogContent } from './blog-content.js';
 import { safeUrl } from './site-content.js';
 
 const modal = document.getElementById('blog-modal');
@@ -6,12 +6,19 @@ const form = document.getElementById('blog-form');
 const fields = form.elements;
 const editor = document.getElementById('blog-content');
 const toolbar = document.getElementById('blog-toolbar');
+const blockStyle = document.getElementById('blog-block-style');
+const fontFamily = document.getElementById('blog-font-family');
+const fontSize = document.getElementById('blog-font-size');
+const toggleButtons = [...toolbar.querySelectorAll('[aria-pressed]')];
 const coverImage = document.getElementById('blog-image-preview');
 const editorStatus = document.getElementById('blog-editor-status');
 const inlineImage = document.getElementById('blog-inline-image');
 const saveButton = document.getElementById('blog-save-button');
 let selection;
 let coverObjectUrl;
+
+for (const font of BLOG_FONTS) fontFamily.add(new Option(font, font));
+for (const size of BLOG_FONT_SIZES) fontSize.add(new Option(`${size} px`, String(size)));
 
 function previewCover() {
   if (coverObjectUrl) URL.revokeObjectURL(coverObjectUrl);
@@ -26,6 +33,7 @@ function previewCover() {
 function open(blog) {
   form.reset();
   selection = null;
+  toggleButtons.forEach(button => button.setAttribute('aria-pressed', 'false'));
   editorStatus.textContent = '';
   document.getElementById('blog-modal-title').textContent = blog ? 'Chỉnh sửa bài viết' : 'Thêm bài viết';
   fields.blogId.value = blog?.id || '';
@@ -40,15 +48,34 @@ function open(blog) {
   fields.title.focus();
 }
 
-document.addEventListener('selectionchange', () => {
+function rememberSelection() {
   const current = window.getSelection();
   if (current.rangeCount && editor.contains(current.getRangeAt(0).commonAncestorContainer)) {
     selection = current.getRangeAt(0).cloneRange();
+    return true;
   }
+  return false;
+}
+
+function updateToolbar() {
+  const anchor = selection.startContainer;
+  const style = getComputedStyle(anchor.nodeType === Node.ELEMENT_NODE ? anchor : anchor.parentElement);
+  const size = Number.parseFloat(style.fontSize);
+  blockStyle.value = (document.queryCommandValue('formatBlock') || '').toLowerCase().replace(/[<>]/g, '');
+  if (blockStyle.selectedIndex === -1) blockStyle.value = '';
+  fontFamily.value = blogFontName(document.queryCommandValue('fontName') || style.fontFamily);
+  fontSize.value = BLOG_FONT_SIZES.includes(size) ? String(size) : '';
+  for (const button of toggleButtons) {
+    button.setAttribute('aria-pressed', String(document.queryCommandState(button.dataset.command)));
+  }
+}
+
+document.addEventListener('selectionchange', () => {
+  if (document.activeElement === editor && rememberSelection()) updateToolbar();
 });
 
 function focusAtSelection() {
-  editor.focus();
+  editor.focus({ preventScroll: true });
   const current = window.getSelection();
   if (!selection || !editor.contains(selection.commonAncestorContainer)) {
     selection = document.createRange();
@@ -59,8 +86,27 @@ function focusAtSelection() {
   current.addRange(selection);
 }
 
+function applyFormat(command, value = null) {
+  focusAtSelection();
+  document.execCommand('styleWithCSS', false, false);
+  const applied = document.execCommand(command, false, value);
+  if (rememberSelection()) updateToolbar();
+  editorStatus.textContent = applied ? '' : 'Trình duyệt chưa áp dụng được định dạng này.';
+}
+
+toolbar.addEventListener('pointerdown', rememberSelection);
 toolbar.addEventListener('mousedown', event => {
   if (event.target.closest('button')) event.preventDefault();
+});
+
+toolbar.addEventListener('change', event => {
+  const control = event.target.closest('select[data-command]');
+  if (!control?.value) return;
+  const { command } = control.dataset;
+  const value = command === 'fontSize'
+    ? String(BLOG_FONT_SIZES.indexOf(Number(control.value)) + 1)
+    : control.value;
+  applyFormat(command, value);
 });
 
 toolbar.addEventListener('click', event => {
@@ -71,7 +117,7 @@ toolbar.addEventListener('click', event => {
     inlineImage.click();
     return;
   }
-  let value = button.dataset.value || null;
+  let value = null;
   if (command === 'createLink') {
     if (!selection || selection.collapsed) {
       editorStatus.textContent = 'Bôi đen đoạn chữ bạn muốn gắn liên kết.';
@@ -80,9 +126,7 @@ toolbar.addEventListener('click', event => {
     value = safeUrl(prompt('Đường dẫn liên kết'), location.origin);
     if (!value) return;
   }
-  focusAtSelection();
-  document.execCommand(command, false, value);
-  editorStatus.textContent = '';
+  applyFormat(command, value);
 });
 
 editor.addEventListener('paste', event => {

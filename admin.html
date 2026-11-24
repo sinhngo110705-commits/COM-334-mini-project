@@ -164,9 +164,18 @@
     #blog-form fieldset { border: 0; min-width: 0; }
     #blog-image-file { margin-bottom: 8px; }
     #blog-image-preview { margin-top: 10px; max-width: 100%; max-height: 220px; object-fit: contain; border-radius: 10px; }
-    #blog-toolbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
-    #blog-toolbar button { border: 1px solid #475569; background: #293148; color: #f8fafc; padding: 5px 9px; border-radius: 6px; cursor: pointer; }
-    #blog-content { min-height: 210px; color: #1e293b; background: #fff; line-height: 1.75; }
+    .blog-editor-panel { background: #1e2130; padding: clamp(16px, 4vw, 32px); border-radius: 16px; width: 100%; max-width: 850px; max-height: 90vh; overflow-y: auto; border: 1px solid rgba(107,143,113,.2); }
+    #blog-toolbar { display: grid; gap: 8px; padding: 10px; color: #253b2d; background: #edf2ed; border: 1px solid #c6d4c9; border-radius: 12px 12px 0 0; }
+    .blog-type-controls { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.3fr) minmax(80px,.65fr); gap: 6px; }
+    .blog-format-controls { display: flex; flex-wrap: wrap; gap: 6px 10px; }
+    .blog-format-group { display: flex; flex-wrap: wrap; gap: 4px; }
+    #blog-toolbar :is(button, select) { min-width: 0; min-height: 34px; border: 1px solid #c6d4c9; background: #fff; color: inherit; padding: 5px 8px; border-radius: 6px; font-size: .82rem; font-family: inherit; }
+    #blog-toolbar select { width: 100%; }
+    #blog-toolbar button:hover, #blog-toolbar button[aria-pressed="true"] { background: #d9eadb; border-color: #7ca287; }
+    #blog-toolbar :is(button, select):focus-visible { outline: 2px solid #38704b; outline-offset: 1px; }
+    #blog-toolbar button:is([data-command="bold"], [data-command="italic"], [data-command="underline"]) { min-width: 34px; font-size: 1rem; }
+    #blog-content { min-height: 280px; color: #1e293b; background: #fff; line-height: 1.8; font-size: 1.06rem; border-radius: 0 0 12px 12px; border-top: 0; cursor: text !important; }
+    #blog-content:empty::before { content: attr(data-placeholder); color: #64748b; pointer-events: none; }
     #blog-content :is(h1, h2, h3, h4, h5, h6) { color: #1e293b; }
     #blog-content a { color: #245a39; }
     #blog-content :is(th, td) { border-color: #cbd5e1; }
@@ -535,8 +544,8 @@
 </div>
 
 <!-- Add/Edit Blog Modal -->
-<div id="blog-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#1e2130;padding:32px;border-radius:16px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;border:1px solid rgba(107,143,113,0.2)">
+<div id="blog-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999;align-items:center;justify-content:center;padding:clamp(8px,3vw,20px)">
+  <div class="blog-editor-panel">
     <h3 id="blog-modal-title" style="color:#fff;margin-bottom:20px;font-size:1.4rem">Thêm Blog Mới</h3>
     <form id="blog-form">
       <fieldset>
@@ -563,17 +572,41 @@
         <div class="admin-form-group">
           <label id="blog-content-label">Nội dung bài viết</label>
           <div id="blog-toolbar" role="group" aria-label="Định dạng nội dung">
-            <button type="button" data-command="formatBlock" data-value="p">Đoạn</button>
-            <button type="button" data-command="formatBlock" data-value="h2">Tiêu đề</button>
-            <button type="button" data-command="bold"><strong>Đậm</strong></button>
-            <button type="button" data-command="italic"><em>Nghiêng</em></button>
-            <button type="button" data-command="insertUnorderedList">Danh sách</button>
-            <button type="button" data-command="insertOrderedList">Danh sách số</button>
-            <button type="button" data-command="createLink">Liên kết</button>
-            <button type="button" data-command="image">Chèn ảnh</button>
+            <div class="blog-type-controls">
+              <select id="blog-block-style" data-command="formatBlock" aria-label="Kiểu đoạn">
+                <option value="" disabled selected>Kiểu đoạn</option>
+                <option value="p">Đoạn văn</option>
+                <option value="h2">Tiêu đề lớn</option>
+                <option value="h3">Tiêu đề nhỏ</option>
+              </select>
+              <select id="blog-font-family" data-command="fontName" aria-label="Font chữ">
+                <option value="" disabled selected>Font chữ</option>
+              </select>
+              <select id="blog-font-size" data-command="fontSize" aria-label="Cỡ chữ">
+                <option value="" disabled selected>Cỡ chữ</option>
+              </select>
+            </div>
+            <div class="blog-format-controls">
+              <div class="blog-format-group" role="group" aria-label="Kiểu chữ">
+                <button type="button" data-command="bold" aria-label="In đậm" title="In đậm (Ctrl+B)" aria-pressed="false"><strong>B</strong></button>
+                <button type="button" data-command="italic" aria-label="In nghiêng" title="In nghiêng (Ctrl+I)" aria-pressed="false"><em>I</em></button>
+                <button type="button" data-command="underline" aria-label="Gạch chân" title="Gạch chân (Ctrl+U)" aria-pressed="false"><u>U</u></button>
+              </div>
+              <div class="blog-format-group" role="group" aria-label="Căn lề">
+                <button type="button" data-command="justifyLeft" aria-label="Căn trái" aria-pressed="false">Trái</button>
+                <button type="button" data-command="justifyCenter" aria-label="Căn giữa" aria-pressed="false">Giữa</button>
+                <button type="button" data-command="justifyRight" aria-label="Căn phải" aria-pressed="false">Phải</button>
+              </div>
+              <div class="blog-format-group" role="group" aria-label="Chèn nội dung">
+                <button type="button" data-command="insertUnorderedList" aria-pressed="false">Danh sách</button>
+                <button type="button" data-command="insertOrderedList" aria-pressed="false">Danh sách số</button>
+                <button type="button" data-command="createLink">Liên kết</button>
+                <button type="button" data-command="image">Chèn ảnh</button>
+              </div>
+            </div>
           </div>
           <input type="file" id="blog-inline-image" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" hidden />
-          <div id="blog-content" class="article-body admin-input" contenteditable="true" role="textbox" aria-labelledby="blog-content-label" aria-multiline="true"></div>
+          <div id="blog-content" class="article-body admin-input" contenteditable="true" role="textbox" aria-labelledby="blog-content-label" aria-multiline="true" data-placeholder="Viết nội dung bài đăng…"></div>
         </div>
         <div class="admin-form-group">
           <label for="blog-active">Trạng thái hiển thị</label>
