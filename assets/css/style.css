@@ -1311,3 +1311,12 @@ section { padding: var(--section-gap) 0; }
   .filter-tabs { gap: 8px; }
   .filter-tab { padding: 8px 16px; font-size: 0.82rem; }
 }
+.order-receipt { background: var(--white); border: 1px solid var(--gray-light); border-radius: var(--radius-lg); margin-bottom: 32px; max-width: 620px; padding: clamp(20px, 4vw, 36px); }
+.order-receipt h3 { font-size: 1.1rem; margin-block: 20px 12px; }
+.order-receipt h2:focus { outline: none; }
+.order-feedback summary { color: var(--sage-dark); cursor: pointer; font-weight: 650; }
+.order-feedback-form { display: grid; gap: 12px; margin-top: 12px; }
+.order-feedback-form label { display: block; font-weight: 650; }
+.order-feedback-form .form-control { margin-top: 4px; }
+.order-feedback-form .btn { justify-self: start; }
+.order-feedback-form [role="status"]:empty { display: none; }

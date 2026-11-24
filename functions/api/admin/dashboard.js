@@ -1,3 +1,13 @@
+import { normalizeBlog } from '../../blog-record.js';
+import { safeUrl } from '../../../assets/js/site-content.js';
+
+const DEMO_ORDER_ID = 'ORD_usr_[0-9][0-9]_[0-9]*';
+const CUSTOMER_ORDER_MATCH = `(
+  o.user_id = u.id OR (
+    o.user_id IS NULL AND trim(u.email) <> '' AND lower(trim(o.customer_email)) = lower(trim(u.email))
+  )
+)`;
+
 /* ===================================================
    API: /api/admin/dashboard - Admin Dashboard Data
    SECURITY: Strictly requires authorized admin session token
@@ -52,44 +62,33 @@ export async function onRequestGet(context) {
 
     // ===== OVERVIEW =====
     if (section === 'overview') {
-      const totalUsers = await env.DB.prepare('SELECT COUNT(*) as count FROM users WHERE role = "user"').first();
-      const totalOrders = await env.DB.prepare('SELECT COUNT(*) as count FROM orders').first();
-      const totalRevenue = await env.DB.prepare('SELECT COALESCE(SUM(total), 0) as sum FROM orders WHERE status != "cancelled"').first();
-      const totalContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts').first();
-      const totalProducts = await env.DB.prepare('SELECT COUNT(*) as count FROM products WHERE is_active = 1').first();
-      const totalBlogs = await env.DB.prepare('SELECT COUNT(*) as count FROM blogs WHERE is_active = 1').first();
-      const pendingOrders = await env.DB.prepare('SELECT COUNT(*) as count FROM orders WHERE status = "pending"').first();
-      const unreadContacts = await env.DB.prepare('SELECT COUNT(*) as count FROM contacts WHERE is_read = 0').first();
-
-      // Recent 5 orders
-      const { results: recentOrders } = await env.DB.prepare(
-        'SELECT id, customer_name, total, status, created_at FROM orders ORDER BY created_at DESC LIMIT 5'
-      ).all();
-
-      return json({
-        ok: true,
-        stats: {
-          totalUsers: totalUsers.count,
-          totalOrders: totalOrders.count,
-          totalRevenue: totalRevenue.sum,
-          totalProducts: totalProducts.count,
-          totalBlogs: totalBlogs ? totalBlogs.count : 0,
-          totalContacts: totalContacts.count,
-          pendingOrders: pendingOrders.count,
-          unreadContacts: unreadContacts.count,
-        },
-        recentOrders
-      });
+      const [totals, recent] = await env.DB.batch([
+        env.DB.prepare(`
+          SELECT
+            (SELECT COUNT(*) FROM users WHERE role = 'user' AND password_hash <> 'dummy_hash') AS totalUsers,
+            (SELECT COUNT(*) FROM products WHERE is_active = 1) AS totalProducts,
+            (SELECT COUNT(*) FROM blogs WHERE is_active = 1) AS totalBlogs,
+            (SELECT COUNT(*) FROM contacts) AS totalContacts,
+            (SELECT COUNT(*) FROM contacts WHERE is_read = 0) AS unreadContacts,
+            COUNT(*) AS totalOrders,
+            COUNT(CASE WHEN status = 'pending' THEN 1 END) AS pendingOrders,
+            COALESCE(SUM(CASE WHEN status = 'delivered' THEN total END), 0) AS deliveredOrderValue
+          FROM orders WHERE id NOT GLOB '${DEMO_ORDER_ID}'
+        `),
+        env.DB.prepare(`
+          SELECT id, customer_name, total, status, created_at FROM orders
+          WHERE id NOT GLOB '${DEMO_ORDER_ID}' ORDER BY created_at DESC, id DESC LIMIT 5
+        `)
+      ]);
+      return json({ ok: true, stats: totals.results[0], recentOrders: recent.results });
     }
 
-    // ===== USERS WITH AGGREGATED STATS & ANTI-LAG PAGINATION =====
+    // ===== USER SEARCH, PAGINATION AND ORDER TOTALS =====
     if (section === 'users') {
-      const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+      const requestedPage = Math.max(1, parseInt(url.searchParams.get('page'), 10) || 1);
       const limitRaw = parseInt(url.searchParams.get('limit') || '10', 10);
-      // Supported limits: 10, 20, 50 (or capped at 100)
       const limit = [10, 20, 50].includes(limitRaw) ? limitRaw : 10;
       const search = (url.searchParams.get('search') || '').trim();
-      const offset = (page - 1) * limit;
 
       const searchPattern = `%${search}%`;
 
@@ -98,6 +97,9 @@ export async function onRequestGet(context) {
         'SELECT COUNT(*) as count FROM users WHERE (COALESCE(name, "") LIKE ? OR COALESCE(email, "") LIKE ? OR COALESCE(phone, "") LIKE ?)'
       ).bind(searchPattern, searchPattern, searchPattern).first();
       const total = totalRow ? totalRow.count : 0;
+      const totalPages = Math.ceil(total / limit) || 1;
+      const page = Math.min(requestedPage, totalPages);
+      const offset = (page - 1) * limit;
 
       // Aggregated customer query: total_orders, delivering_orders, total_spent
       const { results } = await env.DB.prepare(`
@@ -108,14 +110,15 @@ export async function onRequestGet(context) {
           u.phone, 
           u.role, 
           u.created_at,
+          u.password_hash = 'dummy_hash' AS is_demo,
           COUNT(DISTINCT o.id) as total_orders,
-          COUNT(DISTINCT CASE WHEN o.status NOT IN ('delivered', 'cancelled') AND o.id IS NOT NULL THEN o.id END) as delivering_orders,
-          COALESCE(SUM(CASE WHEN o.status != 'cancelled' THEN o.total ELSE 0 END), 0) as total_spent
+          COUNT(DISTINCT CASE WHEN o.status IN ('pending', 'confirmed') THEN o.id END) as delivering_orders,
+          COALESCE(SUM(CASE WHEN o.status = 'delivered' THEN o.total END), 0) as total_spent
         FROM users u
-        LEFT JOIN orders o ON (o.user_id = u.id OR (u.email IS NOT NULL AND u.email != '' AND o.customer_email = u.email))
+        LEFT JOIN orders o ON ${CUSTOMER_ORDER_MATCH}
         WHERE (COALESCE(u.name, "") LIKE ? OR COALESCE(u.email, "") LIKE ? OR COALESCE(u.phone, "") LIKE ?)
         GROUP BY u.id
-        ORDER BY u.created_at DESC
+        ORDER BY u.created_at DESC, u.id DESC
         LIMIT ? OFFSET ?
       `).bind(searchPattern, searchPattern, searchPattern, limit, offset).all();
 
@@ -126,7 +129,7 @@ export async function onRequestGet(context) {
           total,
           page,
           limit,
-          totalPages: Math.ceil(total / limit) || 1
+          totalPages
         }
       });
     }
@@ -143,8 +146,9 @@ export async function onRequestGet(context) {
       if (!user) return json({ ok: false, message: 'Không tìm thấy user.' }, 404);
 
       const { results: orders } = await env.DB.prepare(
-        'SELECT * FROM orders WHERE user_id = ? OR customer_email = ? ORDER BY created_at DESC'
-      ).bind(userId, user.email).all();
+        `SELECT o.* FROM orders o JOIN users u ON u.id = ? AND ${CUSTOMER_ORDER_MATCH}
+         ORDER BY o.created_at DESC, o.id DESC`
+      ).bind(userId).all();
 
       const parsedOrders = orders.map(o => ({ ...o, items: o.items ? JSON.parse(o.items) : [] }));
       const parsedCart = user.cart_items ? JSON.parse(user.cart_items) : [];
@@ -155,7 +159,9 @@ export async function onRequestGet(context) {
     // ===== ORDERS =====
     if (section === 'orders') {
       const { results } = await env.DB.prepare(
-        'SELECT * FROM orders ORDER BY created_at DESC'
+        `SELECT o.*, o.id GLOB '${DEMO_ORDER_ID}' AS is_demo,
+         f.rating AS feedback_rating, f.comment AS feedback_comment, f.created_at AS feedback_at
+         FROM orders o LEFT JOIN order_feedback f ON f.order_id = o.id ORDER BY o.created_at DESC, o.id DESC`
       ).all();
       const orders = results.map(o => ({ ...o, items: o.items ? JSON.parse(o.items) : [] }));
       return json({ ok: true, orders });
@@ -189,7 +195,7 @@ export async function onRequestGet(context) {
         FROM blogs b
         ORDER BY b.created_at DESC
       `).all();
-      return json({ ok: true, blogs: results });
+      return json({ ok: true, blogs: results.map(normalizeBlog) });
     }
 
     // ===== BLOG COMMENTS FOR MODERATION =====
@@ -248,7 +254,11 @@ export async function onRequestPost(context) {
     // Update order status
     if (action === 'updateOrderStatus') {
       const { orderId, status } = body;
-      await env.DB.prepare('UPDATE orders SET status = ? WHERE id = ?').bind(status, orderId).run();
+      if (!orderId || !['pending', 'confirmed', 'delivered', 'cancelled'].includes(status)) {
+        return json({ ok: false, message: 'Trạng thái đơn hàng không hợp lệ.' }, 400);
+      }
+      const result = await env.DB.prepare('UPDATE orders SET status = ? WHERE id = ?').bind(status, orderId).run();
+      if (!result.meta.changes) return json({ ok: false, message: 'Không tìm thấy đơn hàng.' }, 404);
       return json({ ok: true });
     }
 
@@ -287,22 +297,32 @@ export async function onRequestPost(context) {
     // Add/Update Blog
     if (action === 'saveBlog') {
       const { blog } = body;
-      if (!blog || !blog.title || !blog.content) {
+      const title = typeof blog?.title === 'string' ? blog.title.trim() : '';
+      const content = typeof blog?.content === 'string' ? blog.content.trim() : '';
+      if (!title || !content) {
         return json({ ok: false, message: 'Vui lòng nhập đầy đủ tiêu đề và nội dung bài viết.' }, 400);
       }
-      const { id, title, category, content, image_url, is_active } = blog;
+      const { id, category, image_url, is_active } = blog;
+      if (title.length > 200 || content.length > 250000) {
+        return json({ ok: false, message: 'Tiêu đề tối đa 200 ký tự và nội dung tối đa 250.000 ký tự.' }, 400);
+      }
+      if (image_url && !safeUrl(image_url, new URL(request.url).origin)) {
+        return json({ ok: false, message: 'Liên kết ảnh bìa không hợp lệ.' }, 400);
+      }
 
+      let blogId = id;
       if (id) {
-        await env.DB.prepare(
+        const result = await env.DB.prepare(
           `UPDATE blogs SET title=?, category=?, content=?, image_url=?, is_active=? WHERE id=?`
-        ).bind(title.trim(), category || 'Dinh Dưỡng', content.trim(), image_url || null, is_active ?? 1, id).run();
+        ).bind(title, category || 'Dinh Dưỡng', content, image_url || null, is_active ?? 1, id).run();
+        if (!result.meta.changes) return json({ ok: false, message: 'Không tìm thấy bài viết để cập nhật.' }, 404);
       } else {
-        const newId = 'blg_' + Date.now();
+        blogId = 'blg_' + crypto.randomUUID();
         await env.DB.prepare(
           `INSERT INTO blogs (id, title, category, content, image_url, is_active, views) VALUES (?,?,?,?,?,?,0)`
-        ).bind(newId, title.trim(), category || 'Dinh Dưỡng', content.trim(), image_url || null, is_active ?? 1).run();
+        ).bind(blogId, title, category || 'Dinh Dưỡng', content, image_url || null, is_active ?? 1).run();
       }
-      return json({ ok: true, message: 'Lưu bài viết thành công.' });
+      return json({ ok: true, blogId, message: 'Lưu bài viết thành công.' });
     }
 
     // Delete Blog
@@ -378,6 +398,9 @@ export async function onRequestPost(context) {
       const { results: orders } = await env.DB.prepare('SELECT * FROM orders').all();
       const { results: blogs } = await env.DB.prepare('SELECT * FROM blogs').all();
       const { results: comments } = await env.DB.prepare('SELECT * FROM blog_comments').all();
+      const { results: orderFeedback } = await env.DB.prepare(
+        'SELECT order_id, rating, comment, created_at FROM order_feedback WHERE rating IS NOT NULL'
+      ).all();
       const { results: products } = await env.DB.prepare('SELECT * FROM products').all();
       const { results: contacts } = await env.DB.prepare('SELECT * FROM contacts').all();
 
@@ -390,6 +413,7 @@ export async function onRequestPost(context) {
           orders,
           blogs,
           comments,
+          orderFeedback,
           products,
           contacts
         }

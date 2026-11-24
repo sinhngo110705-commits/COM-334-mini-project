@@ -48,6 +48,15 @@ CREATE TABLE IF NOT EXISTS orders (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+-- Phản hồi sau khi đặt hàng
+CREATE TABLE IF NOT EXISTS order_feedback (
+  order_id TEXT PRIMARY KEY REFERENCES orders(id) ON DELETE CASCADE,
+  guest_token_hash TEXT,
+  rating INTEGER CHECK (rating BETWEEN 1 AND 5),
+  comment TEXT NOT NULL DEFAULT '',
+  created_at TEXT
+);
+
 -- Bảng liên hệ
 CREATE TABLE IF NOT EXISTS contacts (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

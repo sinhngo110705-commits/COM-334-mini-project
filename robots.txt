@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
+Disallow: /admin.html
+Disallow: /admin/
+Disallow: /admin
+Disallow: /account.html
+Disallow: /account/
+Disallow: /account
+Disallow: /api/admin/
+Disallow: /api/admin
 
 Sitemap: https://hnguyenworks.id.vn/sitemap.xml

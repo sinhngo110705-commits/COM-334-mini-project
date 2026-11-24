@@ -1,0 +1,10 @@
+.wrangler/
+node_modules/
+.git/
+database/
+scripts/
+functions/
+src/
+*.sqlite*
+*.log
+*.cjs

@@ -2,7 +2,19 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Giỏ Hàng – Sữa Hạt Dana</title>
+  <title>Giỏ Hàng – Sữa Hạt Dana | hnguyenworks.id.vn</title>
+  <meta name="description" content="Xem và quản lý các sản phẩm sữa hạt Dana đã chọn trong giỏ hàng của bạn." />
+  <link rel="canonical" href="https://hnguyenworks.id.vn/cart.html" />
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Giỏ Hàng – Sữa Hạt Dana" />
+  <meta property="og:description" content="Xem và quản lý các sản phẩm sữa hạt Dana đã chọn trong giỏ hàng của bạn." />
+  <meta property="og:url" content="https://hnguyenworks.id.vn/cart.html" />
+  <meta property="og:image" content="https://hnguyenworks.id.vn/assets/images/logo.jpeg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Giỏ Hàng – Sữa Hạt Dana" />
+  <meta name="twitter:description" content="Xem và quản lý các sản phẩm sữa hạt Dana đã chọn trong giỏ hàng của bạn." />
+  <meta name="twitter:image" content="https://hnguyenworks.id.vn/assets/images/logo.jpeg" />
   <link rel="icon" type="image/jpeg" href="assets/images/logo.jpeg" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="stylesheet" href="assets/css/animations.css" />
@@ -17,6 +29,13 @@
   <div class="container" style="padding-top:40px">
     <h1 style="font-size:clamp(1.8rem,3vw,2.5rem);margin-bottom:8px">Giỏ Hàng</h1>
     <p style="margin-bottom:40px;color:var(--gray)">Kiểm tra lại đơn hàng trước khi thanh toán</p>
+
+    <section class="order-receipt" id="order-receipt" aria-labelledby="receipt-title" hidden>
+      <h2 id="receipt-title" tabindex="-1">Đặt hàng thành công</h2>
+      <p>Mã đơn hàng <strong id="receipt-order-id"></strong></p>
+      <h3>Phản hồi về trải nghiệm đặt hàng</h3>
+      <div id="receipt-feedback"></div>
+    </section>
 
     <!-- Empty State -->
     <div id="cart-empty" class="hidden" style="text-align:center;padding:80px 0">
@@ -89,7 +108,20 @@
 <script src="assets/js/main.js"></script>
 <script src="assets/js/cart.js"></script>
 <script src="assets/js/account.js"></script>
+<script src="assets/js/order-feedback.js"></script>
 <script>
+function showOrderReceipt(receipt, focus = false) {
+  if (!receipt?.orderId) return;
+  document.getElementById('order-receipt').hidden = false;
+  document.getElementById('receipt-order-id').textContent = receipt.orderId;
+  const container = document.getElementById('receipt-feedback');
+  if (receipt.submitted) OrderFeedback.showSubmitted(container, receipt.rating);
+  else OrderFeedback.mount(container, receipt);
+  if (focus) document.getElementById('receipt-title').focus();
+}
+
+showOrderReceipt(OrderFeedback.readReceipt());
+
 function applyCoupon() {
   const code = document.getElementById('coupon-code').value.trim().toUpperCase();
   if (code === 'DANA10') window.showToast('Áp dụng mã DANA10 thành công! Giảm 10%','🎉');
@@ -161,6 +193,9 @@ document.getElementById('checkout-form')?.addEventListener('submit', async funct
       window.showToast(`Đặt hàng thành công! Mã đơn: ${data.orderId} 🎉`, '✅', 6000);
       Cart.clearCart();
       renderCartPage();
+      const receipt = { orderId: data.orderId, feedbackToken: data.feedbackToken };
+      OrderFeedback.saveReceipt(receipt);
+      showOrderReceipt(receipt, true);
     } else {
       window.showToast(data.message || 'Có lỗi xảy ra.', '❌');
     }

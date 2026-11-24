@@ -222,7 +222,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadUserOrders() {
   const container = document.getElementById('ptab-tab-orders');
   try {
-    const res = await fetch(`/api/orders?token=${Auth.getToken()}`);
+    const res = await fetch('/api/orders', {
+      headers: { Authorization: `Bearer ${Auth.getToken()}` }
+    });
     const data = await res.json();
     if (data.ok && data.orders && data.orders.length > 0) {
       let html = `<h3 style="margin-bottom:28px;font-size:1.5rem">Đơn hàng của tôi</h3><div style="display:grid;gap:16px">`;
@@ -239,7 +241,8 @@ async function loadUserOrders() {
           case 'cancelled': statusBadge = '<span style="background:rgba(248,113,113,0.15);color:#dc2626;padding:4px 10px;border-radius:12px;font-size:0.8rem;font-weight:600">Đã hủy</span>'; break;
         }
 
-        const itemsStr = o.items.map(i => `${i.name} x${i.qty}`).join(', ');
+        const items = document.createElement('span');
+        items.textContent = o.items.map(i => `${i.name} x${i.qty}`).join(', ');
 
         html += `
           <div style="border:1px solid var(--gray-light);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:12px">
@@ -254,14 +257,19 @@ async function loadUserOrders() {
               </div>
             </div>
             <div style="color:var(--gray);font-size:0.9rem">
-              <strong>Sản phẩm:</strong> ${itemsStr}
+              <strong>Sản phẩm:</strong> ${items.innerHTML}
             </div>
+            ${o.feedback_rating ? `<p>Phản hồi đã gửi · ${o.feedback_rating}/5 sao</p>` : o.status !== 'cancelled' ? `
+              <details class="order-feedback"><summary>Gửi phản hồi</summary><div data-order-feedback="${o.id}"></div></details>` : ''}
             ${canCancel ? `<div style="text-align:right;margin-top:8px"><button onclick="cancelOrder('${o.id}')" style="background:rgba(248,113,113,0.1);color:#dc2626;border:1px solid rgba(248,113,113,0.2);padding:6px 16px;border-radius:8px;font-weight:600;cursor:pointer;transition:all 0.2s">🚨 Hủy đơn hàng</button></div>` : ''}
           </div>
         `;
       });
       html += `</div>`;
       container.innerHTML = html;
+      container.querySelectorAll('[data-order-feedback]').forEach(target => {
+        OrderFeedback.mount(target, { orderId: target.dataset.orderFeedback });
+      });
     }
   } catch (err) {
     console.error(err);

@@ -1,3 +1,5 @@
+import { hashFeedbackToken, recordFeedback } from '../order-feedback.js';
+
 /* ===================================================
    API: /api/orders - Order Management
    =================================================== */
@@ -5,7 +7,7 @@
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
   });
 }
 
@@ -35,16 +37,28 @@ export async function onRequestPost(context) {
 
     const orderId = 'ORD_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4).toUpperCase();
 
-    await env.DB.prepare(
+    const order = env.DB.prepare(
       `INSERT INTO orders (id, user_id, customer_name, customer_phone, customer_email, customer_address, items, subtotal, shipping, total)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       orderId, userId, customerName, customerPhone,
       customerEmail || '', customerAddress || '',
       JSON.stringify(items), subtotal || 0, shipping || 0, total || 0
-    ).run();
+    );
 
-    return json({ ok: true, orderId, message: 'Đặt hàng thành công!' });
+    let feedbackToken;
+    if (userId) {
+      await order.run();
+    } else {
+      feedbackToken = crypto.randomUUID();
+      const tokenHash = await hashFeedbackToken(feedbackToken);
+      await env.DB.batch([
+        order,
+        env.DB.prepare('INSERT INTO order_feedback (order_id, guest_token_hash) VALUES (?, ?)').bind(orderId, tokenHash)
+      ]);
+    }
+
+    return json({ ok: true, orderId, feedbackToken, message: 'Đặt hàng thành công!' });
   } catch (err) {
     return json({ ok: false, message: err.message }, 500);
   }
@@ -54,7 +68,7 @@ export async function onRequestPost(context) {
 export async function onRequestGet(context) {
   const { env, request } = context;
   const url = new URL(request.url);
-  const token = url.searchParams.get('token');
+  const token = request.headers.get('Authorization')?.replace(/^Bearer\s+/i, '') || url.searchParams.get('token');
 
   if (!token) {
     return json({ ok: false, message: 'Vui lòng đăng nhập.' }, 401);
@@ -70,7 +84,9 @@ export async function onRequestGet(context) {
     }
 
     const { results } = await env.DB.prepare(
-      'SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC'
+      `SELECT o.*, f.rating AS feedback_rating, f.comment AS feedback_comment
+       FROM orders o LEFT JOIN order_feedback f ON f.order_id = o.id
+       WHERE o.user_id = ? ORDER BY o.created_at DESC`
     ).bind(session.user_id).all();
 
     const orders = results.map(o => ({
@@ -91,6 +107,8 @@ export async function onRequestPut(context) {
   try {
     const body = await request.json();
     const { token, orderId, action } = body;
+
+    if (action === 'feedback') return await recordFeedback(env.DB, body, json);
 
     if (!token || !orderId || action !== 'cancel') {
       return json({ ok: false, message: 'Dữ liệu không hợp lệ.' }, 400);

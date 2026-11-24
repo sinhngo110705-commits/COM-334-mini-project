@@ -84,7 +84,9 @@ const Cart = (() => {
       });
     }
     saveCart(cart);
-    window.showToast?.(`Đã thêm <strong>${product.name}</strong> vào giỏ! 🛒`, '🌿');
+    const name = document.createElement('span');
+    name.textContent = product.name;
+    window.showToast?.(`Đã thêm <strong>${name.innerHTML}</strong> vào giỏ! 🛒`, '🌿');
     return cart;
   }
 

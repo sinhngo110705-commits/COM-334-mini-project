@@ -1,4 +1,4 @@
-﻿/* ===================================================
+/* ===================================================
    Cloudflare Worker - Main Entry Point
    Sữa Hạt Dana - hnguyenworks.id.vn
    Routes all /api/* requests to handlers
@@ -12,6 +12,10 @@ import { onRequestPost as contactPost } from '../functions/api/contact.js';
 import { onRequestPost as uploadPost } from '../functions/api/upload.js';
 import { onRequestGet as dashboardGet, onRequestPost as dashboardPost } from '../functions/api/admin/dashboard.js';
 import { onRequestGet as blogsGet, onRequestPost as blogsPost } from '../functions/api/blogs.js';
+import { generateSitemapXml, generateRobotsTxt } from '../functions/api/sitemap.js';
+import { detailPath } from '../assets/js/site-content.js';
+import { serveDetail } from './detail-pages.js';
+import { ensureOrderFeedback } from '../functions/order-feedback.js';
 
 // CORS headers
 const CORS = {
@@ -30,6 +34,9 @@ function corsResponse(response) {
 // Auto-migration: ensure tables, columns, roles and sample data exist
 async function runMigrations(env) {
   try {
+    const seedDemoData = env.SEED_DEMO_DATA === 'true';
+    await ensureOrderFeedback(env.DB);
+
     // 1. Ensure blogs table and views column
     await env.DB.prepare(`CREATE TABLE IF NOT EXISTS blogs (
       id TEXT PRIMARY KEY,
@@ -97,7 +104,7 @@ async function runMigrations(env) {
     }
 
     // 5. Seed blogs if not seeded
-    const existing = await env.DB.prepare("SELECT COUNT(*) as c FROM blogs WHERE id = 'blg_dinh_duong_1'").first();
+    const existing = await env.DB.prepare('SELECT COUNT(*) as c FROM blogs').first();
     if (!existing || existing.c === 0) {
       const BLOGS = [
         {
@@ -153,10 +160,12 @@ async function runMigrations(env) {
       for (const blog of BLOGS) {
         const offset = `-${blog.days_ago} days`;
         await env.DB.prepare(
-          `INSERT OR REPLACE INTO blogs (id, title, category, content, image_url, is_active, views, created_at) VALUES (?,?,?,?,?,1, 50, datetime('now', ?))`
-        ).bind(blog.id, blog.title, blog.category, blog.content, blog.image_url, offset).run();
+          `INSERT OR IGNORE INTO blogs (id, title, category, content, image_url, is_active, views, created_at) VALUES (?,?,?,?,?,1,?,datetime('now', ?))`
+        ).bind(blog.id, blog.title, blog.category, blog.content, blog.image_url, seedDemoData ? 50 : 0, offset).run();
       }
     }
+
+    if (!seedDemoData) return;
 
     // 6. Seed sample blog comments and views if needed
     const existingComments = await env.DB.prepare('SELECT COUNT(*) as c FROM blog_comments').first();
@@ -228,15 +237,13 @@ async function runMigrations(env) {
   }
 }
 
-let migrated = false;
+let migration;
 
 export default {
   async fetch(request, env, ctx) {
     // Run migrations once per worker lifecycle
-    if (!migrated) {
-      await runMigrations(env);
-      migrated = true;
-    }
+    migration ??= runMigrations(env);
+    await migration;
 
     const url = new URL(request.url);
     const path = url.pathname;
@@ -249,19 +256,70 @@ export default {
 
     // Serve R2 images via /cdn/*
     if (path.startsWith('/cdn/')) {
-      const key = path.replace('/cdn/', '');
+      const key = path.slice('/cdn/'.length);
+      const legacyImage = /^products\/(blog_(?:dinh_duong_[12]|cong_thuc_[12]|fitness_1|gia_dinh_1)\.png)$/.exec(key);
       try {
         const object = await env.IMAGES.get(key);
-        if (!object) {
-          return new Response('Not Found', { status: 404 });
+        if (object) {
+          const headers = new Headers();
+          object.writeHttpMetadata(headers);
+          headers.set('Cache-Control', 'public, max-age=31536000');
+          headers.set('X-Content-Type-Options', 'nosniff');
+          for (const [k, v] of Object.entries(CORS)) headers.set(k, v);
+          return new Response(object.body, { headers });
         }
-        const headers = new Headers();
-        object.writeHttpMetadata(headers);
-        headers.set('Cache-Control', 'public, max-age=31536000');
-        for (const [k, v] of Object.entries(CORS)) headers.set(k, v);
-        return new Response(object.body, { headers });
       } catch(e) {
-        return new Response('Error loading image', { status: 500 });
+        if (!legacyImage) return new Response('Error loading image', { status: 500 });
+      }
+      if (legacyImage) {
+        return env.ASSETS.fetch(new URL(`/assets/images/blog/${legacyImage[1]}`, url.origin));
+      }
+      return new Response('Not Found', { status: 404 });
+    }
+
+    // Dynamic robots.txt
+    if (path === '/robots.txt') {
+      return generateRobotsTxt(request);
+    }
+
+    // Dynamic sitemap.xml & /api/sitemap & /sitemap
+    if (path === '/sitemap.xml' || path === '/sitemap' || path === '/api/sitemap') {
+      return generateSitemapXml({ request, env, params: {} });
+    }
+
+    if (method === 'GET' || method === 'HEAD') {
+      const detail = /^\/(blog|products)\/([^/]+)\/?$/.exec(path);
+      const productAlias = /^\/(?:shop|product-detail)(?:\.html|\/([^/]+))?\/?$/.exec(path);
+      const listing = /^\/(blog|products)(?:\.html|\/)?$/.exec(path);
+      if (detail) {
+        try {
+          let id;
+          try { id = decodeURIComponent(detail[2]); } catch { id = null; }
+          return await serveDetail(request, env, detail[1], id);
+        } catch (error) {
+          console.error('Detail page:', error);
+          return new Response('Không thể tải trang. Vui lòng thử lại.', { status: 503 });
+        }
+      }
+      if (productAlias || listing) {
+        let id = url.searchParams.get('id') || url.searchParams.get('slug');
+        if (productAlias?.[1]) {
+          try {
+            id = decodeURIComponent(productAlias[1]);
+          } catch {
+            return new Response('Not Found', { status: 404 });
+          }
+        }
+        if (id || productAlias) {
+          const section = listing?.[1] || 'products';
+          url.pathname = id ? detailPath(section, id) : '/products.html';
+          url.searchParams.delete('id');
+          url.searchParams.delete('slug');
+          return Response.redirect(url.href, 301);
+        }
+      }
+      if (/^\/detail(?:\.html|\/.*)?$/.test(path)) {
+        return new Response('Not Found', { status: 404 });
       }
     }
 

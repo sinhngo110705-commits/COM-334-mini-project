@@ -1,38 +1,128 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.xml-schemas.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Static Core Landing Pages -->
   <url>
-    <loc>https://hnguyenworks.id.vn/index.html</loc>
-    <lastmod>2026-04-17</lastmod>
-    <priority>1.00</priority>
+    <loc>https://hnguyenworks.id.vn/</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/products.html</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/blog.html</loc>
+    <lastmod>2026-11-09</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://hnguyenworks.id.vn/about.html</loc>
     <lastmod>2026-04-17</lastmod>
-    <priority>0.80</priority>
-  </url>
-  <url>
-    <loc>https://hnguyenworks.id.vn/products.html</loc>
-    <lastmod>2026-04-17</lastmod>
-    <priority>0.90</priority>
-  </url>
-  <url>
-    <loc>https://hnguyenworks.id.vn/blog.html</loc>
-    <lastmod>2026-04-17</lastmod>
-    <priority>0.80</priority>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://hnguyenworks.id.vn/contact.html</loc>
     <lastmod>2026-04-17</lastmod>
-    <priority>0.70</priority>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://hnguyenworks.id.vn/cart.html</loc>
     <lastmod>2026-04-17</lastmod>
-    <priority>0.50</priority>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://hnguyenworks.id.vn/account.html</loc>
+    <loc>https://hnguyenworks.id.vn/privacy.html</loc>
     <lastmod>2026-04-17</lastmod>
-    <priority>0.50</priority>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/terms.html</loc>
+    <lastmod>2026-04-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Dynamic Products (Static Fallback) -->
+  <url>
+    <loc>https://hnguyenworks.id.vn/products/sp001</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/products/sp002</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/products/sp003</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/products/sp004</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/products/sp005</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/products/sp_combo01</loc>
+    <lastmod>2026-11-02</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Dynamic Blogs (Static Fallback) -->
+  <url>
+    <loc>https://hnguyenworks.id.vn/blog/blg_cong_thuc_1</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/blog/blg_fitness_1</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/blog/blg_dinh_duong_1</loc>
+    <lastmod>2026-10-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/blog/blg_gia_dinh_1</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/blog/blg_dinh_duong_2</loc>
+    <lastmod>2026-10-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hnguyenworks.id.vn/blog/blg_cong_thuc_2</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

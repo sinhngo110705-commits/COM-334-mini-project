@@ -1,3 +1,5 @@
+import { getPublicBlog, normalizeBlog } from '../blog-record.js';
+
 /* ===================================================
    API: /api/blogs - Blog Public API
    Supports: Active blogs listing, view count increment,
@@ -22,23 +24,20 @@ export async function onRequestGet(context) {
     // 1. Fetch comments for a specific blog
     if (action === 'comments' && blogId) {
       const { results } = await env.DB.prepare(
-        'SELECT id, blog_id, user_name, user_email, content, created_at FROM blog_comments WHERE blog_id = ? ORDER BY created_at ASC'
+        `SELECT c.id, c.blog_id, c.user_name, c.content, c.created_at FROM blog_comments c
+         JOIN blogs b ON b.id = c.blog_id AND b.is_active = 1 WHERE c.blog_id = ? ORDER BY c.created_at ASC`
       ).bind(blogId).all();
       return json({ ok: true, comments: results });
     }
 
     // 2. Fetch single blog with comments & views
     if (blogId) {
-      const blog = await env.DB.prepare(
-        `SELECT b.id, b.title, b.category, b.content, b.image_url, COALESCE(b.views, 0) as views, b.created_at,
-         (SELECT COUNT(*) FROM blog_comments WHERE blog_id = b.id) as comment_count
-         FROM blogs b WHERE b.id = ? AND b.is_active = 1`
-      ).bind(blogId).first();
+      const blog = await getPublicBlog(env.DB, blogId);
 
       if (!blog) return json({ ok: false, message: 'Bài viết không tồn tại.' }, 404);
 
       const { results: comments } = await env.DB.prepare(
-        'SELECT id, blog_id, user_name, user_email, content, created_at FROM blog_comments WHERE blog_id = ? ORDER BY created_at ASC'
+        'SELECT id, blog_id, user_name, content, created_at FROM blog_comments WHERE blog_id = ? ORDER BY created_at ASC'
       ).bind(blogId).all();
 
       return json({ ok: true, blog, comments });
@@ -51,7 +50,7 @@ export async function onRequestGet(context) {
        FROM blogs b WHERE b.is_active = 1 ORDER BY b.created_at DESC`
     ).all();
 
-    return json({ ok: true, blogs: results });
+    return json({ ok: true, blogs: results.map(normalizeBlog) });
   } catch (err) {
     return json({ ok: false, message: err.message }, 500);
   }
@@ -70,7 +69,7 @@ export async function onRequestPost(context) {
       const { blogId } = body;
       if (!blogId) return json({ ok: false, message: 'Thiếu blogId.' }, 400);
 
-      const exists = await env.DB.prepare('SELECT id FROM blogs WHERE id = ?').bind(blogId).first();
+      const exists = await env.DB.prepare('SELECT id FROM blogs WHERE id = ? AND is_active = 1').bind(blogId).first();
       if (!exists) return json({ ok: false, message: 'Bài viết không tồn tại.' }, 404);
 
       await env.DB.prepare(
@@ -83,29 +82,32 @@ export async function onRequestPost(context) {
 
     // Add comment
     if (action === 'comment') {
-      const { blogId, name, email, content } = body;
-      if (!blogId || !name || !content) {
+      const { blogId } = body;
+      const name = typeof body.name === 'string' ? body.name.trim() : '';
+      const email = typeof body.email === 'string' ? body.email.trim() : '';
+      const content = typeof body.content === 'string' ? body.content.trim() : '';
+      if (typeof blogId !== 'string' || !blogId || !name || !content) {
         return json({ ok: false, message: 'Vui lòng nhập họ tên và nội dung bình luận.' }, 400);
       }
-      if (name.trim().length < 2) {
-        return json({ ok: false, message: 'Họ tên quá ngắn.' }, 400);
+      if (name.length < 2 || name.length > 100) {
+        return json({ ok: false, message: 'Họ tên cần từ 2 đến 100 ký tự.' }, 400);
       }
-      if (content.trim().length < 2) {
-        return json({ ok: false, message: 'Nội dung bình luận quá ngắn.' }, 400);
+      if (content.length < 2 || content.length > 2000 || email.length > 254) {
+        return json({ ok: false, message: 'Bình luận cần từ 2 đến 2.000 ký tự và email tối đa 254 ký tự.' }, 400);
       }
 
       // Check if blog exists
-      const blog = await env.DB.prepare('SELECT id FROM blogs WHERE id = ?').bind(blogId).first();
+      const blog = await env.DB.prepare('SELECT id FROM blogs WHERE id = ? AND is_active = 1').bind(blogId).first();
       if (!blog) {
         return json({ ok: false, message: 'Bài viết không tồn tại.' }, 404);
       }
 
       const res = await env.DB.prepare(
         'INSERT INTO blog_comments (blog_id, user_name, user_email, content) VALUES (?, ?, ?, ?)'
-      ).bind(blogId, name.trim(), (email || '').trim(), content.trim()).run();
+      ).bind(blogId, name, email, content).run();
 
       const newComment = await env.DB.prepare(
-        'SELECT id, blog_id, user_name, user_email, content, created_at FROM blog_comments WHERE id = ?'
+        'SELECT id, blog_id, user_name, content, created_at FROM blog_comments WHERE id = ?'
       ).bind(res.meta.last_row_id).first();
 
       return json({ ok: true, comment: newComment });

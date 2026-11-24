@@ -85,17 +85,20 @@ export async function onRequestPost(context) {
 
     // Generate unique filename
     const ext = (file.name.split('.').pop() || '').toLowerCase();
-    const allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'];
-    if (!allowed.includes(ext)) {
-      return json({ ok: false, message: 'Chỉ hỗ trợ file ảnh: ' + allowed.join(', ') }, 400);
+    const formats = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif', avif: 'image/avif' };
+    if (!Object.hasOwn(formats, ext)) {
+      return json({ ok: false, message: 'Chỉ hỗ trợ ảnh JPEG, PNG, WebP, GIF và AVIF.' }, 400);
+    }
+    if (!file.size || file.size > 10 * 1024 * 1024) {
+      return json({ ok: false, message: 'Ảnh phải có dung lượng từ 1 byte đến 10 MB.' }, 400);
     }
 
-    const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 8)}.${ext}`;
+    const fileName = `${crypto.randomUUID()}.${ext}`;
     const key = `products/${fileName}`;
 
     // Upload to R2
     await env.IMAGES.put(key, file.stream(), {
-      httpMetadata: { contentType: file.type }
+      httpMetadata: { contentType: formats[ext] }
     });
 
     // Return the public URL

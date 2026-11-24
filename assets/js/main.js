@@ -314,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =================== FILTER TABS ===================
-  document.querySelectorAll('.filter-tab').forEach(tab => {
+  document.querySelectorAll('.filter-tab:not([data-filter-managed])').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
